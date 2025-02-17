@@ -1,5 +1,5 @@
 <?php 
-    include('Functions-Database.php');
+    include('Core.php');
 
     $HWID = '';
 
