@@ -9,5 +9,6 @@
             "Message" => "Failed to Register Code - Missing URL Parameters",
             "Venue" => NULL
         ));
+        die();
     }
 ?>
