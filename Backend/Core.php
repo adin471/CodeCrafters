@@ -17,7 +17,7 @@
 
     // PRIVATE 
 
-    
+
     function Array_To_JSON($Array){
         echo(json_encode($Array));
     }
@@ -25,12 +25,12 @@
     // Example Usage: Generate_Query('SELECT * FROM CodesDB WHERE Code = ?', array('s', 'dkfjud'))
     function Generate_Query($Query, ...$Args){
         $mysqli = Connect_To_Database();
-        
+
         $prepare = $mysqli->prepare($Query);
-        
+
         $bind_string = '';
         $bind_args = [];
-        
+
         foreach($Args as $Array){
             $bind_string .= $Array[0];
             $bind_args[] = $Array[1];
@@ -173,9 +173,6 @@
             // Make the query, preventing sql injection.
             $query = "INSERT INTO AttendanceDB (Venue, HWID, Firstname, Surname) VALUES (?, ?, ?, ?)";
 
-            // $query_prepare = $mysqli->prepare($query);
-            // $query_bind = $query_prepare->bind_param('ssss', $Venue, $HWID, $Firstname, $Surname);
-
             $query_data = Generate_Query($query, array('s', $Venue), array('s', $HWID), array('s', $Firstname), array('s', $Surname));
 
             if($query_data[0] == TRUE){
@@ -200,26 +197,5 @@
             ));
             die();
         }
-    }
-
-    function TestQuery(){
-        $query = "SELECT * FROM AttendanceDB WHERE Venue = ?";
-        $query_data = Generate_Query($query, array('s', 'Hello'));
-
-        if($query_data[0] == FALSE){
-            Array_To_JSON(array(
-                "Success" => FALSE,
-                "Message" => "[Service] - Query Dropped",
-                "Placeholder" => NULL
-            ));            
-        } else {
-            Array_To_JSON(array(
-                "Success" => TRUE,
-                "Message" => "[Service] - [Success Message]",
-                "Placeholder" => NULL
-            ));               
-        }
-        print_r($query_data[1]);
-        die();
     }
 ?>
