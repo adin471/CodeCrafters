@@ -1,0 +1,7 @@
+﻿Name,Quantity,Component
+"UOpen Day Microcontroller",1," Arduino Uno R3"
+"RpotWiper - Brightness Control",1,"10 kΩ Potentiometer"
+"RResistor",1,"330 Ω Resistor"
+"DISTDistance Sensor - HC-SR04",1," Ultrasonic Distance Sensor (4-pin)"
+"UTemperature Sensor",1," Temperature Sensor [TMP36]"
+"ULCD KIOSK Display",1," LCD 16 x 2"
