@@ -63,6 +63,10 @@
     /*                         \*
        PUBLIC FUNCTION SECTION
     */                         \*
-      
-    echo "Version 2 - INDEV";
+
+    // unfinished function
+    function Register_Account($username, $password){
+     $query = "INSERT INTO ODAccountsDB (username, password) VALUES (?, ?)";
+     $response = Generate_Query($query, ('s', $username), ('s', sha256($password))
+    }
 ?>
