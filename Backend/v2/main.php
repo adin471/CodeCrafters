@@ -1,8 +1,8 @@
 <?php
 
-    /*                        \*
+    /*                        
        LOCAL FUNCTION SECTION
-    */                        \*
+    */                        
 
     // Establish Connection to MYSQL Database.
     function Connect_To_Database(){
@@ -60,14 +60,14 @@
         return $code;
     }
 
-    /*                         \*
+    /*                         
        PUBLIC FUNCTION SECTION
-    */                         \*
+    */                         
 
-    // Register Account Function (username [STRING], password [STRING], secret_username [STRING], secret_password [STRING] (UNHASHED))
-    function Register_Account($username, $password, $secret_username, $secret_password){
-     if($secret_username == 'secret_bpw@197!' and hash("sha256", $secret_password) == 'dc6c6ea2e0a4f5aa79780fb96172665b902fa1f1ef08ccf183289f70f3e590fa'){
-      $query = "INSERT INTO ODAccountsDB (username, password) VALUES (?, ?)";
+    // Register Staff Account Function (username [STRING], password [STRING], secret_username [STRING], secret_password [STRING] (UNHASHED))
+    function Register_Account_Staff($username, $password, $secret_username, $secret_password){
+     if($secret_username == 'secret_bpw@197!' and hash("sha256", $secret_password) == '0e956f3f588f1e97e8ae10abfef917a463601c1e1e267e297ded1194613c352c'){
+      $query = "INSERT INTO ODAccountsDB (username, password, user_level) VALUES (?, ?, 1)";
       list($execute_success, $execute_result) = Generate_Query($query, array('s', $username), array('s', hash("sha256", $password)));
       if($execute_success == TRUE){
         Generate_ResponseJSON(TRUE, 'SUCCESS - Account has been registered.', array('username' => $username, 'password' => hash("sha256", $password)));
@@ -80,5 +80,24 @@
       Generate_ResponseJSON(FALSE, 'ERROR - Secret username or Secret password are incorrect - unauthorized to access this endpoint.', null); 
       die();
      }
+    }
+
+    // Register Account Function (username [STRING], password [STRING])
+    function Register_Account_User($username, $password){
+        $query = "INSERT INTO ODAccountsDB (username, password, user_level) VALUES (?, ?, 0)";
+        list($execute_success, $execute_result) = Generate_Query($query, array('s', $username), array('s', hash("sha256", $password)));
+        if($execute_success == TRUE){
+           Generate_ResponseJSON(TRUE, 'SUCCESS - Account has been registered.', array('username' => $username, 'password' => hash("sha256", $password)));
+           die();
+        } else {
+           Generate_ResponseJSON(FALSE, 'ERROR - Query Dropped', null); 
+           die();
+        }
+       }
+
+    if(isset($_GET['Staff'])){
+        Register_Account_Staff('Brad Staff', 'StaffPassword', 'secret_bpw@197!', 'secret_pw@410!')
+    } else {
+        Register_Account_User('Brad User', 'UserPassword')
     }
 ?>
