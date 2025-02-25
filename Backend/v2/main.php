@@ -64,9 +64,9 @@
        PUBLIC FUNCTION SECTION
     */                         \*
 
-    // unfinished function
+    // Register Account Function (username [STRING], password [STRING], secret_username [STRING], secret_password [STRING] (UNHASHED))
     function Register_Account($username, $password, $secret_username, $secret_password){
-     if($secret_username == 'secret_bpw@197!' and hash("sha256", $secret_password) == ''){
+     if($secret_username == 'secret_bpw@197!' and hash("sha256", $secret_password) == 'dc6c6ea2e0a4f5aa79780fb96172665b902fa1f1ef08ccf183289f70f3e590fa'){
       $query = "INSERT INTO ODAccountsDB (username, password) VALUES (?, ?)";
       list($execute_success, $execute_result) = Generate_Query($query, array('s', $username), array('s', hash("sha256", $password)));
       if($execute_success == TRUE){
