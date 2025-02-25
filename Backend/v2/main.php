@@ -67,7 +67,7 @@
     // unfinished function
     function Register_Account($username, $password){
      $query = "INSERT INTO ODAccountsDB (username, password) VALUES (?, ?)";
-     $response = Generate_Query($query, ('s', $username), ('s', hash("sha256", $password));
+     $response = Generate_Query($query, array('s', $username), array('s', hash("sha256", $password)));
      
     }
 ?>
