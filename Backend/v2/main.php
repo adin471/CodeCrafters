@@ -67,7 +67,7 @@
     // Register Staff Account Function (username [STRING], password [STRING], secret_username [STRING], secret_password [STRING] (UNHASHED))
     function Register_Account_Staff($username, $password, $secret_username, $secret_password){
      if($secret_username == 'secret_bpw@197!' and hash("sha256", $secret_password) == '0e956f3f588f1e97e8ae10abfef917a463601c1e1e267e297ded1194613c352c'){
-        
+
       $query = "INSERT INTO ODAccountsDB (username, password, user_level) VALUES (?, ?, ?)";
       list($execute_success, $execute_result) = Generate_Query($query, array('s', $username), array('s', hash("sha256", $password)), array('i', 1));
 
@@ -99,11 +99,5 @@
            die();
         }
 
-    }
-
-    if(isset($_GET['Staff'])){
-        Register_Account_Staff('Brad Staff', 'StaffPassword', 'secret_bpw@197!', 'secret_pw@410!');
-    } else {
-        Register_Account_User('Brad User', 'UserPassword');
     }
 ?>
