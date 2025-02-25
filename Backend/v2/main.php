@@ -65,9 +65,20 @@
     */                         \*
 
     // unfinished function
-    function Register_Account($username, $password){
-     $query = "INSERT INTO ODAccountsDB (username, password) VALUES (?, ?)";
-     $response = Generate_Query($query, array('s', $username), array('s', hash("sha256", $password)));
-     
+    function Register_Account($username, $password, $secret_username, $secret_password){
+     if($secret_username == 'secret_bpw@197!' and hash("sha256", $secret_password) == ''){
+      $query = "INSERT INTO ODAccountsDB (username, password) VALUES (?, ?)";
+      list($execute_success, $execute_result) = Generate_Query($query, array('s', $username), array('s', hash("sha256", $password)));
+      if($execute_success == TRUE){
+        Generate_ResponseJSON(TRUE, 'SUCCESS - Account has been registered.', array('username' => $username, 'password' => hash("sha256", $password)));
+        die();
+      } else {
+        Generate_ResponseJSON(FALSE, 'ERROR - Query Dropped', null); 
+        die();
+      }
+     } else {
+      Generate_ResponseJSON(FALSE, 'ERROR - Secret username or Secret password are incorrect - unauthorized to access this endpoint.', null); 
+      die();
+     }
     }
 ?>
