@@ -141,6 +141,13 @@
         }
     }
 
+    function Logout(){
+        session_unset();
+        session_destroy();
+        Generate_ResponseJSON(TRUE, 'SUCCESS - You have been logged out', null);
+        die();
+    }
+
     // Register Attendance Function (code [STRING])
     function Register_Attendance($code){
         
