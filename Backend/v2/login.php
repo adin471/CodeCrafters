@@ -8,7 +8,7 @@
 
     // check if authenticate method is set, could be anything - > check if session is expired.
     if(isset($method['authenticate'])){
-        Check_Session_Expire()
+        Check_Session_Expire();
     }
 
     // check if username and password set - > continue script, otherwise - > return invalid param response
