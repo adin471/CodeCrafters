@@ -1,5 +1,7 @@
 <?php
 
+    session_start();
+
     /*                        
        LOCAL FUNCTION SECTION
     */                        
@@ -60,12 +62,30 @@
         return $code;
     }
 
+    // Account Auth Function
+    function Authenticate_User($username, $password){
+        $query = "SELECT * FROM ODAccountsDB WHERE username = ? AND password = ?";
+        list($execute_success, $execute_result) = Generate_Query($query, array('s', $username), array('s', hash("sha256", $password)));
+        
+        if($execute_success == TRUE){
+            if(mysqli_num_rows($execute_result) != 0){
+                $data = $execute_result->fetch_assoc();
+                return [TRUE, $data];
+            } else {
+                return [FALSE, null];
+            }
+        } else {
+            return [FALSE, null];
+        }        
+    }
+
     /*                         
        PUBLIC FUNCTION SECTION
     */                         
 
     // Register Staff Account Function (username [STRING], password [STRING], secret_username [STRING], secret_password [STRING] (UNHASHED))
     function Register_Account_Staff($username, $password, $secret_username, $secret_password){
+    
      if($secret_username == 'secret_bpw@197!' and hash("sha256", $secret_password) == '0e956f3f588f1e97e8ae10abfef917a463601c1e1e267e297ded1194613c352c'){
 
       $query = "INSERT INTO ODAccountsDB (username, password, user_level) VALUES (?, ?, ?)";
@@ -99,5 +119,30 @@
            die();
         }
 
+    }
+
+    // Login Account Function (method [$_GET/$_POST], username [STRING], password [STRING])
+    function Login($username, $password){
+        if(isset($_SESSION['user_id'])){
+            Generate_ResponseJSON(FALSE, 'ERROR - You are already logged in', null);
+            die();
+        } else {
+            list($valid, $data) = Authenticate_User($username, $password);
+            if($valid){
+                Generate_ResponseJSON(TRUE, 'SUCCESS - You have been logged in', $data['user_id']);
+                $_SESSION['user_id'] = $data['user_id']; // user_id for session
+                $_SESSION['start'] = time(); // time when session was created, for expiry.
+                $_SESSION['expire'] = $_SESSION['start'] + (60 * 43800); // expires in 1 month
+                die();
+            } else {
+                Generate_ResponseJSON(FALSE, 'ERROR - Invalid username or password', null);
+                die();
+            }
+        }
+    }
+
+    // Register Attendance Function (code [STRING])
+    function Register_Attendance($code){
+        
     }
 ?>
