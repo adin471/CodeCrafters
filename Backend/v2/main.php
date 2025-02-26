@@ -79,6 +79,15 @@
         }        
     }
 
+    function Check_Session_Expire(){
+        if(isset($_SESSION['expire'])){
+          $time = now();
+          if($time >= $_SESSION['expire']){
+            session_unset();
+            session_destroy();
+          }
+        } 
+    }
     /*                         
        PUBLIC FUNCTION SECTION
     */                         
@@ -152,4 +161,5 @@
     function Register_Attendance($code){
         
     }
+    
 ?>
