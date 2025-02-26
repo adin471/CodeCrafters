@@ -1,6 +1,12 @@
 <?php
 
-    session_start();
+    /*
+       RAW PHP CODE
+    */
+
+    if (session_status() === PHP_SESSION_NONE) {
+     session_start();
+    }
 
     /*                        
        LOCAL FUNCTION SECTION
@@ -81,13 +87,14 @@
 
     function Check_Session_Expire(){
         if(isset($_SESSION['expire'])){
-          $time = now();
-          if($time >= $_SESSION['expire']){
+          $current_time = time();
+          if($current_time >= $_SESSION['expire']){
             session_unset();
             session_destroy();
           }
         } 
     }
+    
     /*                         
        PUBLIC FUNCTION SECTION
     */                         
@@ -151,15 +158,21 @@
     }
 
     function Logout(){
-        session_unset();
-        session_destroy();
-        Generate_ResponseJSON(TRUE, 'SUCCESS - You have been logged out', null);
-        die();
+        if(session_status() != PHP_SESSION_ACTIVE){
+            Generate_ResponseJSON(FALSE, 'ERROR - You are not logged in', null);
+            die();
+        } else {
+            session_unset();
+            session_destroy();
+            setcookie(session_name(), '', time() - 3600, '/');
+            Generate_ResponseJSON(TRUE, 'SUCCESS - You have been logged out', null);
+            die();
+        }
     }
 
     // Register Attendance Function (code [STRING])
     function Register_Attendance($code){
         
     }
-    
+
 ?>
