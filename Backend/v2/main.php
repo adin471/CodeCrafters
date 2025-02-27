@@ -68,7 +68,19 @@
         return $code;
     }
 
-    // Account Auth Function
+    // Check Duplicate Username Function  (username [STRING])
+    function Check_Duplicate($username){
+        $query = "SELECT * FROM ODAccountsDB WHERE username = ?";
+        list($execute_success, $execute_result) = Generate_Query($query, array('s', $username));
+
+        if(mysqli_num_rows($execute_result) == 0){
+            return FALSE;
+        } else {
+            return TRUE;
+        }
+    }
+
+    // Account Auth Function (username [STRING], password [STRING])
     function Authenticate_User($username, $password){
         $query = "SELECT * FROM ODAccountsDB WHERE username = ? AND password = ?";
         list($execute_success, $execute_result) = Generate_Query($query, array('s', $username), array('s', hash("sha256", $password)));
@@ -85,6 +97,7 @@
         }        
     }
 
+    // Session Expiry Check Function 
     function Check_Session_Expire(){
         if(isset($_SESSION['expire'])){
           $current_time = time();
@@ -94,14 +107,19 @@
           }
         } 
     }
-    
+
     /*                         
        PUBLIC FUNCTION SECTION
     */                         
 
     // Register Staff Account Function (username [STRING], password [STRING], secret_username [STRING], secret_password [STRING] (UNHASHED))
     function Register_Account_Staff($username, $password, $secret_username, $secret_password){
-    
+        
+     if(Check_Duplicate($username)){
+        Generate_ResponseJSON(FALSE, 'ERROR - Username already in use', array('username' => $username));
+        die();
+     }
+
      if($secret_username == 'secret_bpw@197!' and hash("sha256", $secret_password) == '0e956f3f588f1e97e8ae10abfef917a463601c1e1e267e297ded1194613c352c'){
 
       $query = "INSERT INTO ODAccountsDB (username, password, user_level) VALUES (?, ?, ?)";
@@ -124,6 +142,12 @@
 
     // Register Account Function (username [STRING], password [STRING])
     function Register_Account_User($username, $password){
+
+        if(Check_Duplicate($username)){
+            Generate_ResponseJSON(FALSE, 'ERROR - Username already in use', array('username' => $username));
+            die();
+        }
+
         $query = "INSERT INTO ODAccountsDB (username, password, user_level) VALUES (?, ?, ?)";
         list($execute_success, $execute_result) = Generate_Query($query, array('s', $username), array('s', hash("sha256", $password)), array('i', 0));
 
@@ -157,6 +181,7 @@
         }
     }
 
+    // Logout Account Function 
     function Logout(){
         if(session_status() != PHP_SESSION_ACTIVE){
             Generate_ResponseJSON(FALSE, 'ERROR - You are not logged in', null);
@@ -172,7 +197,12 @@
 
     // Register Attendance Function (code [STRING])
     function Register_Attendance($code){
-        
+        if(isset($_SESSION['user_id'])){
+            // register attendance here!
+        } else {
+            Generate_ResponseJSON(FALSE, 'ERROR - You are not logged in, please login.', null);
+            die();
+        }
     }
 
 ?>
