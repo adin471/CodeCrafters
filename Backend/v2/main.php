@@ -108,6 +108,37 @@
         } 
     }
 
+    // Register Attendance Function (username [STRING], password [STRING])
+    function Register_Attendance($username, $password){
+        list($valid, $data) = Authenticate_User($username, $password);
+        if($valid){
+            $query = "INSERT INTO ODAttendanceDB (user_id) VALUES (?)";
+            list($execute_success, $execute_result) = Generate_Query($query, array('i', $data['user_id']));
+            return $execute_success;
+        } else {
+            return FALSE;
+        }
+    }
+
+    // Delete Account Function (username [STRING], password [STRING])
+    function Delete_Account($username, $password){
+        $query = "SELECT * FROM ODAccountsDB WHERE username = ? AND password = ?";
+        list($execute_success, $execute_result) = Generate_Query($query, array('s', $username), array('s', hash("sha256", $password)));
+        
+        if($execute_success == TRUE){
+            if(mysqli_num_rows($execute_result) != 0){
+                $data = $execute_result->fetch_assoc();
+                $dquery = "DELETE FROM ODAccountsDB WHERE user_id = ?";
+                list($dexecute_success, $dexecute_result) = Generate_Query($dquery, array('i', $data['user_id']));
+                return [$dexecute_success, $dexecute_result];
+            } else {
+                return [FALSE, null];
+            }
+        } else {
+            return [FALSE, null];
+        }           
+    }
+
     /*                         
        PUBLIC FUNCTION SECTION
     */                         
@@ -141,7 +172,13 @@
     }
 
     // Register Account Function (username [STRING], password [STRING])
-    function Register_Account_User($username, $password){
+    function Register_Account_User($username, $password, $register_code){
+
+        // hard-coded registration code for attendance - I3OXJ5C8skU
+        if($register_code != 'I3OXJ5C8skU'){
+            Generate_ResponseJSON(FALSE, 'ERROR - Your registration code is invalid', null);
+           die();
+        } 
 
         if(Check_Duplicate($username)){
             Generate_ResponseJSON(FALSE, 'ERROR - Username already in use', array('username' => $username));
@@ -152,6 +189,14 @@
         list($execute_success, $execute_result) = Generate_Query($query, array('s', $username), array('s', hash("sha256", $password)), array('i', 0));
 
         if($execute_success == TRUE){
+        
+           $attendance_register_success = Register_Attendance($username, $password);
+           if($attendance_register_success == FALSE){
+            Delete_Account($username, $password);
+            Generate_ResponseJSON(FALSE, 'ERROR - Failed to register your account as attended.', null);
+            die();
+           } 
+
            Generate_ResponseJSON(TRUE, 'SUCCESS - Account has been registered.', array('username' => $username, 'password' => hash("sha256", $password)));
            die();
         } else {
@@ -191,16 +236,6 @@
             session_destroy();
             setcookie(session_name(), '', time() - 3600, '/');
             Generate_ResponseJSON(TRUE, 'SUCCESS - You have been logged out', null);
-            die();
-        }
-    }
-
-    // Register Attendance Function (code [STRING])
-    function Register_Attendance($code){
-        if(isset($_SESSION['user_id'])){
-            // register attendance here!
-        } else {
-            Generate_ResponseJSON(FALSE, 'ERROR - You are not logged in, please login.', null);
             die();
         }
     }

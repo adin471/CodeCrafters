@@ -14,7 +14,12 @@
         if(isset($method['secretu']) and isset($method['secretp'])){
             Register_Account_Staff($method['username'], $method['password'], $method['secretu'], $method['secretp']);
         } else {
-            Register_Account_User($method['username'], $method['password']);
+            if(isset($method['accesscode'])){
+                Register_Account_User($method['username'], $method['password'], $method['accesscode']);
+            } else {
+                Generate_ResponseJSON(FALSE, 'ERROR - Missing access code.', null);
+                die();
+            }
         }
 
     } else {
