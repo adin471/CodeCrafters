@@ -6,35 +6,54 @@
   <title>University of Wolverhampton Open Day</title>
   <link rel="stylesheet" href="../css/style.css">
   <script>
+    // Function to remove < and > from user input to prevent XSS
+    function sanitizeInput(input) {
+      return input.replace(/[<>]/g, "").trim();
+    }
+
     function validateLoginForm() {
-      const username = document.getElementById('login-username').value.trim();
-      const password = document.getElementById('login-password').value.trim();
+      let username = sanitizeInput(document.getElementById('login-username').value);
+      let password = sanitizeInput(document.getElementById('login-password').value);
+
       if (username === '' || password === '') {
         alert('Please enter both username and password.');
         return false;
       }
+
+      document.getElementById('login-username').value = username;
+      document.getElementById('login-password').value = password;
+      
       return true;
     }
 
     function validateRegisterForm() {
-      const username = document.getElementById('register-username').value.trim();
-      const password = document.getElementById('register-password').value.trim();
-      const confirmPassword = document.getElementById('confirm-password').value.trim();
-      const accessCode = document.getElementById('register-code').value.trim();
+      let username = sanitizeInput(document.getElementById('register-username').value);
+      let password = sanitizeInput(document.getElementById('register-password').value);
+      let confirmPassword = sanitizeInput(document.getElementById('confirm-password').value);
+      let accessCode = sanitizeInput(document.getElementById('register-code').value);
+
       const passwordRegex = /^(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{8,15}$/;
 
       if (username === '' || password === '' || confirmPassword === '' || accessCode === '') {
         alert('Please fill in all fields.');
         return false;
       }
+
       if (!passwordRegex.test(password)) {
         alert('Password must be 8-15 characters long, alphanumeric, contain at least one capital letter and one number.');
         return false;
       }
+
       if (password !== confirmPassword) {
         alert('Passwords do not match.');
         return false;
       }
+
+      document.getElementById('register-username').value = username;
+      document.getElementById('register-password').value = password;
+      document.getElementById('confirm-password').value = confirmPassword;
+      document.getElementById('register-code').value = accessCode;
+
       return true;
     }
 
@@ -56,6 +75,15 @@
         loginTab.classList.remove('active');
       }
     }
+
+    document.addEventListener("DOMContentLoaded", function() {
+      const supportIcon = document.getElementById('support-icon');
+      const supportInfo = document.getElementById('support-info');
+
+      supportIcon.addEventListener('click', () => {
+        supportInfo.classList.toggle('hidden');
+      });
+    });
   </script>
 </head>
 <body>
@@ -68,6 +96,15 @@
       <span>?</span>
     </div>
   </header>
+
+  <!-- Support Info (hidden by default) -->
+  <div id="support-info" class="support-info hidden">
+    <h2>Support Information</h2>
+    <p>
+      <!-- Placeholder text will get support info from the database for easy updating -->
+      For assistance, please call 0123-456-789 or email <em>support@university.ac.uk</em>.
+    </p>
+  </div>
 
   <!-- Main Content -->
   <main>
