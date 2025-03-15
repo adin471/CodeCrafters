@@ -14,12 +14,10 @@ body {
 /* Header styling */
 header {
   position: relative;
-  /* layer elements on top if needed */
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 1rem;
-  /* Incorporate banner as a background */
   background: url("../images/header banner.svg") no-repeat center;
   background-size: cover;
   border-bottom: 1px solid #ccc;
@@ -69,21 +67,21 @@ main p {
   background-color: #FFC107;
   color: #000;
   text-decoration: none;
+  border: none;
   border-radius: 4px;
   font-weight: bold;
   transition: background-color 0.2s ease-in-out;
+  cursor: pointer;
 }
 
 .button-yellow:hover {
   background-color: #e0a900;
-  /* Slightly darker on hover */
 }
 
 /* Support info popup */
 .support-info {
   position: fixed;
   top: 70px;
-  /* Slightly below the header */
   right: 1rem;
   width: 250px;
   padding: 1rem;
@@ -104,4 +102,134 @@ main p {
 /* Hidden class to toggle visibility */
 .hidden {
   display: none;
+}
+
+/* ===================== */
+/* 🔹 Login/Register Box Styles */
+/* ===================== */
+
+/* Centered Auth Container */
+.auth-container {
+  background: #ffffff;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 400px;
+  text-align: center;
+  margin-top: 50px; /* Prevents overlapping the header */
+}
+
+/* Form Styling */
+.auth-form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Input Fields Layout */
+.form-group {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+  margin-bottom: 1rem;
+}
+
+.form-group label {
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+}
+
+.form-group input {
+  padding: 0.75rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+/* Centering the Button */
+.button-container {
+  width: 100%;
+  text-align: center;
+  margin-top: 1rem;
+}
+
+/* Adjust button styling to match the reference */
+.button-yellow {
+  width: 100%;
+  padding: 0.75rem;
+  background-color: #FFC107;
+  color: #000;
+  text-decoration: none;
+  border: none;
+  border-radius: 4px;
+  font-weight: bold;
+  transition: background-color 0.2s ease-in-out;
+  cursor: pointer;
+}
+
+.button-yellow:hover {
+  background-color: #e0a900;
+}
+
+/* Hide Register/Login Forms by Default */
+.hidden {
+  display: none;
+}
+
+
+/* Dashboard Container */
+.dashboard-container {
+  text-align: center;
+  padding: 2rem;
+}
+
+/* Grid Layout */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* Individual Dashboard Items */
+.dashboard-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  background-color: #f9f9f9;
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.dashboard-item img {
+  width: 50px;
+  height: 50px;
+  margin-bottom: 0.75rem;
+}
+
+.dashboard-item span {
+  font-size: 1rem;
+  font-weight: bold;
+  color: #333;
+}
+
+/* Hover Effects */
+.dashboard-item:hover {
+  transform: translateY(-5px);
+  box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Responsive Design */
+@media (max-width: 600px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
 }
