@@ -1,14 +1,11 @@
 <?php
-require_once __DIR__ . '/vendor/autoload.php';
+require_once "../../../vendor/autoload.php";
 
 use Twig\Environment;
 use Twig\Loader\FilesystemLoader;
 
-$loader = new FilesystemLoader(__DIR__ . '/templates');
-$twig = new Environment($loader);
-
 try {
-    $loader = new FilesystemLoader(__DIR__ . '/templates');
+    $loader = new FilesystemLoader('../templates');
     $twig = new Environment($loader);
 
     // Render the homepage template
