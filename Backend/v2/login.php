@@ -3,7 +3,7 @@
     // 1 - > $_GET for testing purposes 
     // 2 - > $_POST for live version.
 
-    $method = $_GET;
+    $method = $_POST;
     include('main.php');
 
     // check if authenticate method is set, could be anything - > check if session is expired.

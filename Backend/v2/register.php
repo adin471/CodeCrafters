@@ -3,7 +3,7 @@
     // 1 - > $_GET for testing purposes 
     // 2 - > $_POST for live version.
 
-    $method = $_GET;
+    $method = $_POST;
     include('main.php');
 
     // check if username and password set - > continue script, otherwise - > return invalid param response
