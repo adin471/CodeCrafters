@@ -3,15 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>University of Wolverhampton Open Day</title>
-  <link rel="stylesheet" href="css/style.css">
+  <title>University of Wolverhampton Open Day - Campus Map</title>
+  <link rel="stylesheet" href="../css/style.css">
 </head>
 <body>
   <!-- Header Section -->
   <header>
     <div class="header-logo">
       <a href="homepage.php">
-        <img src="images/UoW logo.svg" alt="University of Wolverhampton Logo">
+        <img src="../images/UoW logo.svg" alt="University of Wolverhampton Logo">
       </a>
     </div>
     <div class="header-support" id="support-icon" title="Support">
@@ -21,25 +21,70 @@
 
   <!-- Main Content -->
   <main>
-    <h1>University of Wolverhampton Open Day</h1>
+    <h1>Campus Map</h1>
+    <div class="map-container">
+      <img src="../images/map.svg" alt="University of Wolverhampton Campus Map" id="campus-map">
+    </div>
   </main>
 
-  <!-- Support Info (hidden by default) -->
+  <!-- Support Info (Hidden by Default) -->
   <div id="support-info" class="support-info hidden">
     <h2>Support Information</h2>
-    <p>
-      <!-- Placeholder text will get support info from database for easy updating -->
-      For assistance, please call 0123-456-789 or email <em>support@university.ac.uk</em>.
-    </p>
+    <p>For assistance, please call 0123-456-789 or email <em>support@university.ac.uk</em>.</p>
   </div>
 
-  <!-- Simple toggle script for Support Info -->
+  <!-- JavaScript placed at the end to ensure DOM loads first -->
   <script>
-    const supportIcon = document.getElementById('support-icon');
-    const supportInfo = document.getElementById('support-info');
+    document.addEventListener("DOMContentLoaded", function () {
+      const supportIcon = document.getElementById("support-icon");
+      const supportInfo = document.getElementById("support-info");
+      const mapContainer = document.querySelector(".map-container");
+      const mapImage = document.getElementById("campus-map");
 
-    supportIcon.addEventListener('click', () => {
-      supportInfo.classList.toggle('hidden');
+      if (!mapContainer || !mapImage) {
+        console.error("Error: .map-container or #campus-map not found. Ensure the HTML element exists.");
+        return;
+      }
+
+      let scale = 1;
+      let panX = 0;
+      let panY = 0;
+      let isDragging = false;
+      let startX, startY;
+
+      // Toggle Support Info
+      supportIcon.addEventListener("click", () => {
+        supportInfo.classList.toggle("hidden");
+      });
+
+      // Zoom Functionality
+      mapContainer.addEventListener("wheel", function (e) {
+        e.preventDefault();
+        let zoomIntensity = 0.1;
+        scale += e.deltaY > 0 ? -zoomIntensity : zoomIntensity;
+        scale = Math.min(Math.max(0.5, scale), 3); // Limit zoom range
+        mapImage.style.transform = `translate(${panX}px, ${panY}px) scale(${scale})`;
+      });
+
+      // Drag Functionality
+      mapImage.addEventListener("mousedown", function (e) {
+        isDragging = true;
+        startX = e.clientX - panX;
+        startY = e.clientY - panY;
+        mapImage.style.cursor = "grabbing";
+      });
+
+      document.addEventListener("mousemove", function (e) {
+        if (!isDragging) return;
+        panX = e.clientX - startX;
+        panY = e.clientY - startY;
+        mapImage.style.transform = `translate(${panX}px, ${panY}px) scale(${scale})`;
+      });
+
+      document.addEventListener("mouseup", function () {
+        isDragging = false;
+        mapImage.style.cursor = "grab";
+      });
     });
   </script>
 </body>
