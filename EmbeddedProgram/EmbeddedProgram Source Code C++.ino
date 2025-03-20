@@ -73,10 +73,20 @@
       time = pulseIn(echoPin, HIGH);
       distance = (time*.0343)/2;
       
+      // Range checks
+      if (distance > 332){
+        Serial.println("You are out of range");
+      }
+      else if (distance < 2.32){
+        Serial.println("You are out of range");
+      }
+      
       // For Serial Monitor
-      Serial.print("Distance:CM ");
-      Serial.print(distance);      
-
+      Serial.print("Distance ");
+      Serial.print(distance);
+      Serial.print(" CM");
+      Serial.println();                   
+      delay(250);
       
       if(distance<100){
       
@@ -84,7 +94,7 @@
       lcd.print("Welcome to");
       lcd.setCursor(0,1); // Set cursor to the second row
       lcd.print("Open day!");
-      delay(2000); // Display welcome message for 2 seconds
+      delay(5000); // Display welcome message for 5 seconds
       lcd.clear(); // Tells the LCD screen to erase all the characters that are currently displayed and move the cursor back to the home position.
 
       lcd.setCursor(0,0); // Set cursor to the first row
@@ -141,7 +151,7 @@
 
 
       /*     
-      Summary: The above code reads the voltage from a temperature sensor,  converts it to a digital value,
+      Summary: The below code reads the voltage from a temperature sensor,  converts it to a digital value,
       and then uses a specific formula to calculate the temperature in Celcisus.
       It then displays this temperature on an LCD screen and prints it to the Serial Monitor.
       The 4.68 value in the code is a calibration factor, which is used to improve the accuracy of the reading.
@@ -177,14 +187,20 @@
       */
   
       lcd.clear(); // Clears the LCD screen
+      Serial.print("Current Temperature ");  
       Serial.print(temperatureC); // Prints temperature to the Serial Monitor
-      Serial.println(" degrees C");
+      Serial.print(char(176)); // Prints the degree symbol
+      Serial.print("C");
+      Serial.println();
+      delay(250);
       lcd.setCursor(0,0); // Sets the cursor to the top left corner of the LCD
-      lcd.print("Temperature"); // Prints “Temperature” on LCD
-      lcd.setCursor(0,1); // Sets cursor to the second row
-      lcd.print("degrees C"); // Prints “degrees C” on LCD
-      lcd.setCursor(11,1); // Sets the cursor to the 12th position on the second line and prints “degrees C”
+      lcd.print("Temp"); // Prints “Temperature” on LCD
+      lcd.setCursor(05,0);
       lcd.print(temperatureC); // Prints the calculated temperature
+      lcd.print(char(176));
+      lcd.setCursor(12,0); // Sets cursor to the second row
+      lcd.print("C"); // Prints “C” on LCD
+      lcd.setCursor(13,0); // Sets the cursor to the 12th position on the second line and prints “degrees C”
       delay(5000); // Pauses the program for 5 seconds so you have time to read the temperature on the LCD.
       lcd.clear(); // Clears the LCD screen
       }
