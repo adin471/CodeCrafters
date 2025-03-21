@@ -4,8 +4,8 @@ include 'main.php'; // Include database functions
 function fetchCourses($filters = []) {
     $query = "SELECT c.course_id, c.course_name, c.course_description, 
                      v.building_name, v.floor
-              FROM ODcoursesDB c
-              LEFT JOIN ODvenueDB v ON c.venue_id = v.venue_id
+              FROM ODCoursesDB c
+              LEFT JOIN ODVenueDB v ON c.venue_id = v.venue_id
               WHERE 1";
 
     $params = [];
