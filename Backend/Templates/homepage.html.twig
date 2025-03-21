@@ -79,7 +79,7 @@
         .then(data => {
           if (data.success) {
             // Only redirect if logout was successful
-            window.location.href = 'index.php';
+            window.location.href = '../index.php';
           } else {
             alert('Logout failed: ' + data.message);
           }
