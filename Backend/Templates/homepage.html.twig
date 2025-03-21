@@ -7,7 +7,6 @@
   <link rel="stylesheet" href="../css/style.css">
 </head>
 <body>
-
   <!-- Header Section -->
   <header>
     <div class="header-logo">
@@ -15,6 +14,9 @@
     </div>
     <div class="header-support" id="support-icon" title="Support">
       <span>?</span>
+    </div>
+    <div class="header-logout">
+      <button id="logout-button">Logout</button>
     </div>
   </header>
 
@@ -66,6 +68,26 @@
 
     supportIcon.addEventListener('click', () => {
       supportInfo.classList.toggle('hidden');
+    });
+
+      // Logout button logic
+    const logoutButton = document.getElementById('logout-button');
+
+    logoutButton.addEventListener('click', () => {
+      fetch('logout.php', { method: 'POST' })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            // Only redirect if logout was successful
+            window.location.href = 'index.php';
+          } else {
+            alert('Logout failed: ' + data.message);
+          }
+        })
+        .catch(error => {
+          console.error('Logout error:', error);
+          alert('An error occurred while logging out.');
+        });
     });
   </script>
 

@@ -353,3 +353,24 @@ main p {
     padding: 16px;
   }
 }
+
+
+/* Logout Button */
+.header-logout {
+  margin-left: 1rem;
+}
+
+#logout-button {
+  padding: 6px 12px;
+  font-size: 1rem;
+  cursor: pointer;
+  background-color: #00427e;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  transition: background-color 0.3s ease;
+}
+
+#logout-button:hover {
+  background-color: #002f5c;
+}

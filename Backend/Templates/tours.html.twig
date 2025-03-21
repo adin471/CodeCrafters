@@ -8,7 +8,7 @@
 </head>
 <body>
   <!-- Header Section -->
-  <header>
+  <header class="header">
     <div class="header-logo">
       <a href="homepage.php">
         <img src="../images/UoW logo.svg" alt="University of Wolverhampton Logo">
@@ -17,13 +17,17 @@
     <div class="header-support" id="support-icon" title="Support">
       <span>?</span>
     </div>
+    <div class="header-logout">
+      <button id="logout-button">Logout</button>
+    </div>
   </header>
 
   <!-- Main Content -->
   <main>
     <div class="tour-message">
       <p>
-        Interested in a campus tour? Just head to the desk marked <strong>Tours</strong> and let a member of staff know. Tours start every 30 minutes—on the hour and at half past. We look forward to showing you around!
+        Interested in a campus tour? Just head to the desk marked <strong>Tours</strong> and let a member of staff know.
+        Tours start every 30 minutes—on the hour and at half past. We look forward to showing you around!
       </p>
     </div>
   </main>
@@ -36,13 +40,33 @@
     </p>
   </div>
 
-  <!-- Simple toggle script for Support Info -->
+  <!-- Scripts -->
   <script>
+    // Toggle support info
     const supportIcon = document.getElementById('support-icon');
     const supportInfo = document.getElementById('support-info');
 
     supportIcon.addEventListener('click', () => {
       supportInfo.classList.toggle('hidden');
+    });
+
+    // Logout button logic
+    const logoutButton = document.getElementById('logout-button');
+
+    logoutButton.addEventListener('click', () => {
+      fetch('logout.php', { method: 'POST' })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            window.location.href = 'index.php';
+          } else {
+            alert('Logout failed: ' + data.message);
+          }
+        })
+        .catch(error => {
+          console.error('Logout error:', error);
+          alert('An error occurred while logging out.');
+        });
     });
   </script>
 </body>
