@@ -7,7 +7,7 @@ if (isset($_SESSION['username'])) {
     exit();
 }
 
-require_once "../../vendor/autoload.php";
+require_once "../../../vendor/autoload.php";
 
 use Twig\Environment;
 use Twig\Loader\FilesystemLoader;
