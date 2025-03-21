@@ -39,7 +39,13 @@
             $bind_args[] = $Array[1];
         }
 
-        $bind = $prepare->bind_param($bind_string, ...$bind_args);
+        if(empty($bind_string) and empty($bind_args)){
+            $result = $mysqli->query($Query);
+            $execute = ($result !== false);
+            return [$execute, $result];
+        } else {
+            $bind = $prepare->bind_param($bind_string, ...$bind_args);
+        }
 
         $execute = $prepare->execute();
         $result = $prepare->get_result();
@@ -120,6 +126,20 @@
             session_destroy();
           }
         } 
+    }
+
+    // Return Venues Function
+    function Return_Venues(){
+        // Make the query \\
+        $query = "SELECT * FROM ODVenuesDB";
+        list($execute_success, $execute_result) = Generate_Query($query);
+
+        // Check for query execution success - return false, null if not successful or true and data if successful \\
+        if($execute_success == FALSE){
+            return [FALSE, null];
+        } else {
+            return [TRUE, $execute_result];
+        }
     }
 
     // Register Attendance Function (username [STRING], password [STRING])
@@ -241,7 +261,7 @@
            Generate_ResponseJSON(TRUE, 'SUCCESS - Account has been registered.', array('username' => $username, 'password' => hash("sha256", $password)));
            die();
         } else {
-            // Registration failure response & kill php runtime \\
+           // Registration failure response & kill php runtime \\
            Generate_ResponseJSON(FALSE, 'ERROR - Query Dropped', null); 
            die();
         }
@@ -288,4 +308,62 @@
         }
     }
 
+    // List courses function
+    function Search_Courses($search_filter){
+
+        // If user not logged in, return failure response \\
+        if(!isset($_SESSION['user_id'])){
+            Generate_ResponseJSON(FALSE, 'ERROR - You must be logged in to access this endpoint.', null);
+            die();
+        } 
+
+        // Search for courses matching search or similar to search \\
+        if($search_filter != null){
+            // Make the query \\
+            $query = "SELECT * FROM ODCoursesDB WHERE course_name LIKE ? OR course_name LIKE ?";
+            list($execute_success, $execute_result) = Generate_Query($query, array('s', $search_filter), array('s', '%' . $search_filter . '%'));
+
+            // Check for query execution success, failure response if FALSE \\
+            if($execute_success == FALSE){
+                Generate_ResponseJSON(FALSE, 'ERROR - Query Dropped', null); 
+                die();              
+            } else {
+                // Check for results, failure response if none else form json response \\
+                if(mysqli_num_rows($execute_result) == 0){
+                    // Failure response \\
+                    Generate_ResponseJSON(FALSE, 'No courses were found', null); 
+                    die();                        
+                } else {
+                    // Neatly put all courses and their data into a table \\
+                    while ($row = $execute_result->fetch_assoc()) {
+                        $courses[] = $row;
+                    }
+                    Generate_ResponseJSON(TRUE, 'SUCCESS - Courses have been returned', $courses);
+                }
+            }
+        } else {
+            // Make the query \\
+            $query = "SELECT * FROM ODCoursesDB";
+            list($execute_success, $execute_result) = Generate_Query($query);
+
+            // Check for query execution success, failure response if FALSE \\
+            if($execute_success == FALSE){
+                Generate_ResponseJSON(FALSE, 'ERROR - Query Dropped', null); 
+                die();              
+            } else {
+                // Check for results, failure response if none else form json response \\
+                if(mysqli_num_rows($execute_result) == 0){
+                    // Failure response \\
+                    Generate_ResponseJSON(FALSE, 'No courses were found', null); 
+                    die();                        
+                } else {
+                    // Neatly put all courses and their data into a table \\
+                    while ($row = $execute_result->fetch_assoc()) {
+                        $courses[] = $row;
+                    }
+                    Generate_ResponseJSON(TRUE, 'SUCCESS - Courses have been returned', $courses);
+                }
+            }
+        }
+    }
 ?>
