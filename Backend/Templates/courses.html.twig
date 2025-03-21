@@ -53,9 +53,11 @@
             body: formData
         })
         .then(response => response.json())
-        .then(data => {
+        .then(json => {
             const container = document.getElementById('courses-container');
             container.innerHTML = ''; // Clear previous results
+
+            var data = json.Data;
 
             if (data.length > 0) {
                 data.forEach(course => {
