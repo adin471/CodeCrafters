@@ -335,3 +335,21 @@ main p {
     flex-direction: column;
   }
 }
+
+.tour-message {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 60vh;
+  padding: 20px;
+  text-align: center;
+  font-size: 1.2rem;
+  line-height: 1.6;
+}
+
+@media (max-width: 600px) {
+  .tour-message {
+    font-size: 1rem;
+    padding: 16px;
+  }
+}
