@@ -48,7 +48,7 @@
         const formData = new FormData();
         formData.append('search', searchQuery);
 
-        fetch('../php/courses.php', {
+        fetch('../v2/courses.php', {
             method: 'POST',
             body: formData
         })
