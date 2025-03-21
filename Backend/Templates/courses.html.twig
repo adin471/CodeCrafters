@@ -97,10 +97,10 @@
     const logoutButton = document.getElementById('logout-button');
 
     logoutButton.addEventListener('click', () => {
-      fetch('logout.php', { method: 'POST' })
+      fetch('../v2/logout.php', { method: 'POST' })
         .then(response => response.json())
         .then(data => {
-          if (data.success) {
+          if (data.Success) {
             // Only redirect if logout was successful
             window.location.href = '../index.php';
           } else {
