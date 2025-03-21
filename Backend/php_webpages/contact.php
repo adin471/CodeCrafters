@@ -1,4 +1,12 @@
 <?php
+session_start();
+
+// Check if user is logged in
+if (!isset($_SESSION['username'])) {
+    header('Location: attendance.php'); // Redirect to another page if not logged in
+    exit();
+}
+
 require_once "../../../vendor/autoload.php";
 
 use Twig\Environment;
