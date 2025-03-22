@@ -124,6 +124,9 @@
           if($current_time >= $_SESSION['expire']){
             session_unset();
             session_destroy();
+            setcookie(session_name(), '', time() - 3600, '/');
+            Generate_ResponseJSON(FALSE, 'ERROR - Your session as expired', null);
+            die();
           }
         } 
     }
@@ -188,7 +191,13 @@
 
     // Register Staff Account Function (username [STRING], password [STRING], secret_username [STRING], secret_password [STRING] (UNHASHED))
     function Register_Account_Staff($username, $password, $secret_username, $secret_password){
-        
+
+     // If logged in, return failure response \\
+     if(isset($_SESSION['user_id'])){
+        Generate_ResponseJSON(FALSE, 'ERROR - You are currently logged in', null);
+        die();
+     } 
+
      // Ensure username is not a duplicate/not already taken \\
      if(Check_Duplicate($username)){
         Generate_ResponseJSON(FALSE, 'ERROR - Username already in use', array('username' => $username));
@@ -222,6 +231,12 @@
 
     // Register Account Function (username [STRING], password [STRING])
     function Register_Account_User($username, $password, $register_code){
+
+        // If logged in, return failure response \\
+        if(isset($_SESSION['user_id'])){
+            Generate_ResponseJSON(FALSE, 'ERROR - You are currently logged in', null);
+            die();
+        } 
 
         // hard-coded registration code for attendance - I3OXJ5C8skU
         if($register_code != 'I3OXJ5C8skU'){
@@ -313,7 +328,7 @@
 
         // If user not logged in, return failure response \\
         if(!isset($_SESSION['user_id'])){
-            Generate_ResponseJSON(FALSE, 'ERROR - You must be logged in to access this endpoint.', null);
+            Generate_ResponseJSON(FALSE, 'ERROR - You must be logged in to access this endpoint', null);
             die();
         } 
 
