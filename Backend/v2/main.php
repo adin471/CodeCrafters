@@ -115,6 +115,29 @@
         }        
     }
 
+    // Account Data Function (userid [INT])
+    function Get_User_Data($id){
+        // Attempt to find account via username (plaintext) and password (plaintext->sha256_hash) \\
+        $query = "SELECT * FROM ODAccountsDB WHERE user_id = ?";
+        list($execute_success, $execute_result) = Generate_Query($query, array('i', $id));
+        
+        // If success, check result \\
+        if($execute_success == TRUE){
+            // Make results actually exist \\
+            if(mysqli_num_rows($execute_result) != 0){
+                // Found account with valid credentials, return true and account data \\
+                $data = $execute_result->fetch_assoc();
+                return [TRUE, $data];
+            } else {
+                // No accounts returned, return false and null \\
+                return [FALSE, null];
+            }
+        } else {
+            // Execute failed, return false and null \\
+            return [FALSE, null];
+        }        
+    }    
+
     // Session Expiry Check Function 
     function Check_Session_Expire(){
         // Check if session is set \\
@@ -124,9 +147,6 @@
           if($current_time >= $_SESSION['expire']){
             session_unset();
             session_destroy();
-            setcookie(session_name(), '', time() - 3600, '/');
-            Generate_ResponseJSON(FALSE, 'ERROR - Your session as expired', null);
-            die();
           }
         } 
     }
@@ -192,11 +212,11 @@
     // Register Staff Account Function (username [STRING], password [STRING], secret_username [STRING], secret_password [STRING] (UNHASHED))
     function Register_Account_Staff($username, $password, $secret_username, $secret_password){
 
-     // If logged in, return failure response \\
-     if(isset($_SESSION['user_id'])){
-        Generate_ResponseJSON(FALSE, 'ERROR - You are currently logged in', null);
+    // If user logged in, return failure response \\
+    if(isset($_SESSION['user_id'])){
+        Generate_ResponseJSON(FALSE, 'ERROR - You must be logged out to access this endpoint', null);
         die();
-     } 
+    } 
 
      // Ensure username is not a duplicate/not already taken \\
      if(Check_Duplicate($username)){
@@ -232,9 +252,9 @@
     // Register Account Function (username [STRING], password [STRING])
     function Register_Account_User($username, $password, $register_code){
 
-        // If logged in, return failure response \\
+        // If user logged in, return failure response \\
         if(isset($_SESSION['user_id'])){
-            Generate_ResponseJSON(FALSE, 'ERROR - You are currently logged in', null);
+            Generate_ResponseJSON(FALSE, 'ERROR - You must be logged out to access this endpoint', null);
             die();
         } 
 
@@ -328,7 +348,7 @@
 
         // If user not logged in, return failure response \\
         if(!isset($_SESSION['user_id'])){
-            Generate_ResponseJSON(FALSE, 'ERROR - You must be logged in to access this endpoint', null);
+            Generate_ResponseJSON(FALSE, 'ERROR - You must be logged in to access this endpoint.', null);
             die();
         } 
 
@@ -379,6 +399,45 @@
                     Generate_ResponseJSON(TRUE, 'SUCCESS - Courses have been returned', $courses);
                 }
             }
+        }
+    }
+
+    function Refresh_Access_Code(){
+        // If user not logged in, return failure response \\
+        if(!isset($_SESSION['user_id'])){
+            Generate_ResponseJSON(FALSE, 'ERROR - You must be logged in to access this endpoint', null);
+            die();
+        } 
+        
+        // Attempt to find data using user id \\
+        list($valid, $data) = Get_User_Data($_SESSION['user_id']);
+
+        // If Data Found, check against it \\
+        if($valid){
+            // Check user level, if success refresh access code, otherwise failure response \\
+            if($data['user_level'] >= 1){
+                // Generate new code \\
+                $new_code = Generate_Code();
+
+                // Make the query \\
+                $query = "UPDATE CodesDB SET code = ? WHERE code_id = 1";
+                list($execute_success, $execute_result) = Generate_Query($query, array('s', $new_code));
+
+                // Check for results, failure response if not execute success \\
+                if($execute_success == TRUE){
+                    Generate_ResponseJSON(TRUE, 'SUCCESS - Access Registration Code has been regenerated', array('code' => $new_code));
+                } else {
+                    Generate_ResponseJSON(FALSE, 'ERROR - Query Dropped', null);
+                }
+                die();
+            }  else {
+                Generate_ResponseJSON(FALSE, 'ERROR - You are not authorized to access this endpoint', null);
+                die();
+            }
+        } else {
+            // No data found, return failure response \\
+            Generate_ResponseJSON(FALSE, 'ERROR - You are not authorized to access this endpoint', null);
+            die();
         }
     }
 ?>
