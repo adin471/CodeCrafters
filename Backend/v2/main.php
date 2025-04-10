@@ -5,7 +5,7 @@
     */
 
     // disable error reporting
-    error_reporting(0);
+    //error_reporting(0);
 
     if (session_status() === PHP_SESSION_NONE) {
      session_start();
@@ -78,7 +78,21 @@
         return $code;
     }
 
-    // Check Duplicate Username Function  (username [STRING])
+    // Return Access Code Function
+    function Return_Access_Code(){
+        // Make the query \\
+        $query = "SELECT * FROM ODCodesDB WHERE code_id = 1";
+        list($execute_success, $execute_result) = Generate_Query($query);
+
+        // Check for query execution success - return false, null if not successful or true and data if successful \\
+        if($execute_success == FALSE){
+            return [FALSE, null];
+        } else {
+            return [TRUE, $execute_result];
+        }    
+    }
+
+    // Check Duplicate Username Function (username [STRING])
     function Check_Duplicate($username){
         // Attempt to find account via username \\
         $query = "SELECT * FROM ODAccountsDB WHERE username = ?";
@@ -154,7 +168,7 @@
     // Return Venues Function
     function Return_Venues(){
         // Make the query \\
-        $query = "SELECT * FROM ODVenuesDB";
+        $query = "SELECT * FROM ODVenueDB";
         list($execute_success, $execute_result) = Generate_Query($query);
 
         // Check for query execution success - return false, null if not successful or true and data if successful \\
@@ -258,8 +272,19 @@
             die();
         } 
 
+        // Get the access code \\
+        $dynamic_code = '';
+        list($success, $execute_result) = Return_Access_Code();
+        if(!$success){
+            Generate_ResponseJSON(FALSE, 'ERROR - There is no valid access code at this time', null);
+            die();
+        } else {
+            $data = $execute_result->fetch_assoc();
+            $dynamic_code = $data['code'];
+        }
+
         // hard-coded registration code for attendance - I3OXJ5C8skU
-        if($register_code != 'I3OXJ5C8skU'){
+        if(strtolower($register_code) != $dynamic_code){
             Generate_ResponseJSON(FALSE, 'ERROR - Your registration code is invalid', null);
            die();
         } 
@@ -344,8 +369,9 @@
     }
 
     // List courses function
+    list($venue_success, $venue_data) = Return_Venues();
     function Search_Courses($search_filter){
-
+        
         // If user not logged in, return failure response \\
         if(!isset($_SESSION['user_id'])){
             Generate_ResponseJSON(FALSE, 'ERROR - You must be logged in to access this endpoint.', null);
@@ -369,11 +395,24 @@
                     Generate_ResponseJSON(FALSE, 'No courses were found', null); 
                     die();                        
                 } else {
-                    // Neatly put all courses and their data into a table \\
+                    // Neatly put all courses and their data into a list \\
                     while ($row = $execute_result->fetch_assoc()) {
                         $courses[] = $row;
                     }
-                    Generate_ResponseJSON(TRUE, 'SUCCESS - Courses have been returned', $courses);
+
+                    // Neatly put all venues and their data into a list if success \\
+                    if($GLOBALS['venue_success']){
+                        while($row = $GLOBALS['venue_data']->fetch_assoc()){
+                            $venues[] = $row;
+                        }
+                    } else {
+                        $venues = [];
+                    }
+
+                    // Create return Data \\
+                    $return_data = array('courses' => $courses, 'venues' => $venues);
+
+                    Generate_ResponseJSON(TRUE, 'SUCCESS - Courses have been returned', $return_data);
                 }
             }
         } else {
@@ -396,7 +435,20 @@
                     while ($row = $execute_result->fetch_assoc()) {
                         $courses[] = $row;
                     }
-                    Generate_ResponseJSON(TRUE, 'SUCCESS - Courses have been returned', $courses);
+
+                    // Neatly put all venues and their data into a list if success \\
+                    if($GLOBALS['venue_success']){
+                        while($row = $GLOBALS['venue_data']->fetch_assoc()){
+                            $venues[] = $row;
+                        }
+                    } else {
+                        $venues = [];
+                    }
+
+                    // Create return Data \\
+                    $return_data = array('courses' => $courses, 'venues' => $venues);
+
+                    Generate_ResponseJSON(TRUE, 'SUCCESS - Courses have been returned', $return_data);
                 }
             }
         }
@@ -420,7 +472,7 @@
                 $new_code = Generate_Code();
 
                 // Make the query \\
-                $query = "UPDATE CodesDB SET code = ? WHERE code_id = 1";
+                $query = "UPDATE ODCodesDB SET code = ? WHERE code_id = 1";
                 list($execute_success, $execute_result) = Generate_Query($query, array('s', $new_code));
 
                 // Check for results, failure response if not execute success \\
