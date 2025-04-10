@@ -280,11 +280,11 @@
             die();
         } else {
             $data = $execute_result->fetch_assoc();
-            $dynamic_code = $data['code'];
+            $dynamic_code = strtolower($data['code']);
         }
 
-        // hard-coded registration code for attendance - I3OXJ5C8skU
-        if(strtolower($register_code) != $dynamic_code){
+        // Check against dynamic attendance code \\
+        if($register_code != $dynamic_code){
             Generate_ResponseJSON(FALSE, 'ERROR - Your registration code is invalid', null);
            die();
         } 
