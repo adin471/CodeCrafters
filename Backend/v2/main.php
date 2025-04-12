@@ -284,7 +284,7 @@
         }
 
         // Check against dynamic attendance code \\
-        if($register_code != $dynamic_code){
+        if(strtolower($register_code) != $dynamic_code){
             Generate_ResponseJSON(FALSE, 'ERROR - Your registration code is invalid', null);
            die();
         } 
