@@ -5,7 +5,7 @@
     */
 
     // disable error reporting
-    error_reporting(0);
+    //error_reporting(0);
 
     if (session_status() === PHP_SESSION_NONE) {
      session_start();
@@ -48,7 +48,14 @@
         }
 
         $execute = $prepare->execute();
-        $result = $prepare->get_result();
+        $result = null;
+
+        // Handle Query Type for accurate result \\
+        if (stripos($Query, 'SELECT') === 0) {
+            $result = $prepare->get_result();
+        } else {
+            $result = $prepare->affected_rows;
+        }
 
         $mysqli->close();
         return [$execute, $result];
@@ -390,9 +397,9 @@
                 die();              
             } else {
                 // Check for results, failure response if none else form json response \\
-                if(mysqli_num_rows($execute_result) == 0){
+                if($execute_result === false || mysqli_num_rows($execute_result) === 0){
                     // Failure response \\
-                    Generate_ResponseJSON(FALSE, 'No courses were found', null); 
+                    Generate_ResponseJSON(FALSE, 'ERROR - No courses were found', null); 
                     die();                        
                 } else {
                     // Neatly put all courses and their data into a list \\
@@ -428,7 +435,7 @@
                 // Check for results, failure response if none else form json response \\
                 if(mysqli_num_rows($execute_result) == 0){
                     // Failure response \\
-                    Generate_ResponseJSON(FALSE, 'No courses were found', null); 
+                    Generate_ResponseJSON(FALSE, 'ERROR - No courses were found', null); 
                     die();                        
                 } else {
                     // Neatly put all courses and their data into a table \\
@@ -481,6 +488,84 @@
                 } else {
                     Generate_ResponseJSON(FALSE, 'ERROR - Query Dropped', null);
                 }
+                die();
+            }  else {
+                Generate_ResponseJSON(FALSE, 'ERROR - You are not authorized to access this endpoint', null);
+                die();
+            }
+        } else {
+            // No data found, return failure response \\
+            Generate_ResponseJSON(FALSE, 'ERROR - You are not authorized to access this endpoint', null);
+            die();
+        }
+    }
+
+    function Delete_Course($course_id){
+        
+        // Attempt to find data using user id \\
+        list($valid, $data) = Get_User_Data($_SESSION['user_id']);
+
+        // If Data Found, check against it \\
+        if($valid){
+            // Check user level, if success continue, otherwise failure response \\
+            if($data['user_level'] >= 1){
+                // Make the query \\
+                $query = "DELETE FROM ODCoursesDB WHERE course_id = ?";
+                list($execute_success, $execute_result) = Generate_Query($query, array('s', $course_id));
+
+                // Check for zero results \\
+                if($execute_result == 0){
+                    // Failure response \\
+                    Generate_ResponseJSON(FALSE, 'ERROR - Course does not exist in database, Query Dropped', null); 
+                    die();                        
+                }
+
+                // Check for results, failure response if not execute success \\
+                if($execute_success == TRUE){
+                    Generate_ResponseJSON(TRUE, 'SUCCESS - Course has been removed from the database', array('course_id' => $course_id));
+                } else {
+                    Generate_ResponseJSON(FALSE, 'ERROR - Query Dropped', null);
+                }
+
+                die();
+            }  else {
+                Generate_ResponseJSON(FALSE, 'ERROR - You are not authorized to access this endpoint', null);
+                die();
+            }
+        } else {
+            // No data found, return failure response \\
+            Generate_ResponseJSON(FALSE, 'ERROR - You are not authorized to access this endpoint', null);
+            die();
+        }
+    }
+
+    function Delete_User($user_id){
+        
+        // Attempt to find data using user id \\
+        list($valid, $data) = Get_User_Data($_SESSION['user_id']);
+
+        // If Data Found, check against it \\
+        if($valid){
+            // Check user level, if success continue, otherwise failure response \\
+            if($data['user_level'] >= 1){
+                // Make the query \\
+                $query = "DELETE FROM ODAccountsDB WHERE user_id = ?";
+                list($execute_success, $execute_result) = Generate_Query($query, array('s', $user_id));
+
+                // Check for zero results \\
+                if($execute_result == 0){
+                    // Failure response \\
+                    Generate_ResponseJSON(FALSE, 'ERROR - User does not exist in database, Query Dropped', null); 
+                    die();                        
+                }
+
+                // Check for results, failure response if not execute success \\
+                if($execute_success == TRUE){
+                    Generate_ResponseJSON(TRUE, 'SUCCESS - User has been deleted (removed) from the database', array('user_id' => $user_id));
+                } else {
+                    Generate_ResponseJSON(FALSE, 'ERROR - Query Dropped', null);
+                }
+                
                 die();
             }  else {
                 Generate_ResponseJSON(FALSE, 'ERROR - You are not authorized to access this endpoint', null);
