@@ -1,44 +1,18 @@
 <?php
-include 'main.php'; // Include database functions
+    // set $method as one of the below specified.
+    // 1 - > $_GET for testing purposes 
+    // 2 - > $_POST for live version.
 
-function fetchCourses($filters = []) {
-    $query = "SELECT c.course_id, c.course_name, c.course_description, 
-                     v.building_name, v.floor
-              FROM ODCoursesDB c
-              LEFT JOIN ODVenueDB v ON c.venue_id = v.venue_id
-              WHERE 1";
+    $method = $_POST;
+    include('main.php');
 
-    $params = [];
-    $types = '';
-
-    // Apply search filter for course name
-    if (!empty($filters['search'])) {
-        $query .= " AND c.course_name LIKE ?";
-        $types .= 's';
-        $params[] = "%" . $filters['search'] . "%"; // Search for partial matches
-    }
-
-    // Run the query with filters
-    list($execute_success, $execute_result) = Generate_Query($query, array_merge([$types], array_map(function ($p) {
-        return [$p];
-    }, $params)));
-
-    if ($execute_success) {
-        $courses = [];
-        while ($row = $execute_result->fetch_assoc()) {
-            $courses[] = $row;
+    if(isset($method['search'])){
+        if($method['search'] == ''){
+            Search_Courses(null);
+        } else {
+            Search_Courses($method['search'] ?? null);
         }
-        echo json_encode($courses);
     } else {
-        echo json_encode([]);
+        Search_Courses(null);
     }
-}
-
-// Handle AJAX POST request
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $filters = [
-        'search' => $_POST['search'] ?? null
-    ];
-    fetchCourses($filters);
-}
 ?>

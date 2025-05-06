@@ -5,7 +5,7 @@
     */
 
     // disable error reporting
-    error_reporting(0);
+    //error_reporting(0);
 
     if (session_status() === PHP_SESSION_NONE) {
      session_start();
@@ -39,10 +39,23 @@
             $bind_args[] = $Array[1];
         }
 
-        $bind = $prepare->bind_param($bind_string, ...$bind_args);
+        if(empty($bind_string) and empty($bind_args)){
+            $result = $mysqli->query($Query);
+            $execute = ($result !== false);
+            return [$execute, $result];
+        } else {
+            $bind = $prepare->bind_param($bind_string, ...$bind_args);
+        }
 
         $execute = $prepare->execute();
-        $result = $prepare->get_result();
+        $result = null;
+
+        // Handle Query Type for accurate result \\
+        if (stripos($Query, 'SELECT') === 0) {
+            $result = $prepare->get_result();
+        } else {
+            $result = $prepare->affected_rows;
+        }
 
         $mysqli->close();
         return [$execute, $result];
@@ -72,7 +85,21 @@
         return $code;
     }
 
-    // Check Duplicate Username Function  (username [STRING])
+    // Return Access Code Function
+    function Return_Access_Code(){
+        // Make the query \\
+        $query = "SELECT * FROM ODCodesDB WHERE code_id = 1";
+        list($execute_success, $execute_result) = Generate_Query($query);
+
+        // Check for query execution success - return false, null if not successful or true and data if successful \\
+        if($execute_success == FALSE){
+            return [FALSE, null];
+        } else {
+            return [TRUE, $execute_result];
+        }    
+    }
+
+    // Check Duplicate Username Function (username [STRING])
     function Check_Duplicate($username){
         // Attempt to find account via username \\
         $query = "SELECT * FROM ODAccountsDB WHERE username = ?";
@@ -109,6 +136,29 @@
         }        
     }
 
+    // Account Data Function (userid [INT])
+    function Get_User_Data($id){
+        // Attempt to find account via username (plaintext) and password (plaintext->sha256_hash) \\
+        $query = "SELECT * FROM ODAccountsDB WHERE user_id = ?";
+        list($execute_success, $execute_result) = Generate_Query($query, array('i', $id));
+        
+        // If success, check result \\
+        if($execute_success == TRUE){
+            // Make results actually exist \\
+            if(mysqli_num_rows($execute_result) != 0){
+                // Found account with valid credentials, return true and account data \\
+                $data = $execute_result->fetch_assoc();
+                return [TRUE, $data];
+            } else {
+                // No accounts returned, return false and null \\
+                return [FALSE, null];
+            }
+        } else {
+            // Execute failed, return false and null \\
+            return [FALSE, null];
+        }        
+    }    
+
     // Session Expiry Check Function 
     function Check_Session_Expire(){
         // Check if session is set \\
@@ -120,6 +170,20 @@
             session_destroy();
           }
         } 
+    }
+
+    // Return Venues Function
+    function Return_Venues(){
+        // Make the query \\
+        $query = "SELECT * FROM ODVenueDB";
+        list($execute_success, $execute_result) = Generate_Query($query);
+
+        // Check for query execution success - return false, null if not successful or true and data if successful \\
+        if($execute_success == FALSE){
+            return [FALSE, null];
+        } else {
+            return [TRUE, $execute_result];
+        }
     }
 
     // Register Attendance Function (username [STRING], password [STRING])
@@ -168,7 +232,13 @@
 
     // Register Staff Account Function (username [STRING], password [STRING], secret_username [STRING], secret_password [STRING] (UNHASHED))
     function Register_Account_Staff($username, $password, $secret_username, $secret_password){
-        
+
+    // If user logged in, return failure response \\
+    if(isset($_SESSION['user_id'])){
+        Generate_ResponseJSON(FALSE, 'ERROR - You must be logged out to access this endpoint', null);
+        die();
+    } 
+
      // Ensure username is not a duplicate/not already taken \\
      if(Check_Duplicate($username)){
         Generate_ResponseJSON(FALSE, 'ERROR - Username already in use', array('username' => $username));
@@ -203,8 +273,25 @@
     // Register Account Function (username [STRING], password [STRING])
     function Register_Account_User($username, $password, $register_code){
 
-        // hard-coded registration code for attendance - I3OXJ5C8skU
-        if($register_code != 'I3OXJ5C8skU'){
+        // If user logged in, return failure response \\
+        if(isset($_SESSION['user_id'])){
+            Generate_ResponseJSON(FALSE, 'ERROR - You must be logged out to access this endpoint', null);
+            die();
+        } 
+
+        // Get the access code \\
+        $dynamic_code = '';
+        list($success, $execute_result) = Return_Access_Code();
+        if(!$success){
+            Generate_ResponseJSON(FALSE, 'ERROR - There is no valid access code at this time', null);
+            die();
+        } else {
+            $data = $execute_result->fetch_assoc();
+            $dynamic_code = strtolower($data['code']);
+        }
+
+        // Check against dynamic attendance code \\
+        if(strtolower($register_code) != $dynamic_code){
             Generate_ResponseJSON(FALSE, 'ERROR - Your registration code is invalid', null);
            die();
         } 
@@ -241,7 +328,7 @@
            Generate_ResponseJSON(TRUE, 'SUCCESS - Account has been registered.', array('username' => $username, 'password' => hash("sha256", $password)));
            die();
         } else {
-            // Registration failure response & kill php runtime \\
+           // Registration failure response & kill php runtime \\
            Generate_ResponseJSON(FALSE, 'ERROR - Query Dropped', null); 
            die();
         }
@@ -288,4 +375,206 @@
         }
     }
 
+    // List courses function
+    list($venue_success, $venue_data) = Return_Venues();
+    function Search_Courses($search_filter){
+        
+        // If user not logged in, return failure response \\
+        if(!isset($_SESSION['user_id'])){
+            Generate_ResponseJSON(FALSE, 'ERROR - You must be logged in to access this endpoint.', null);
+            die();
+        } 
+
+        // Search for courses matching search or similar to search \\
+        if($search_filter != null){
+            // Make the query \\
+            $query = "SELECT * FROM ODCoursesDB WHERE course_name LIKE ? OR course_name LIKE ?";
+            list($execute_success, $execute_result) = Generate_Query($query, array('s', $search_filter), array('s', '%' . $search_filter . '%'));
+
+            // Check for query execution success, failure response if FALSE \\
+            if($execute_success == FALSE){
+                Generate_ResponseJSON(FALSE, 'ERROR - Query Dropped', null); 
+                die();              
+            } else {
+                // Check for results, failure response if none else form json response \\
+                if($execute_result === false || mysqli_num_rows($execute_result) === 0){
+                    // Failure response \\
+                    Generate_ResponseJSON(FALSE, 'ERROR - No courses were found', null); 
+                    die();                        
+                } else {
+                    // Neatly put all courses and their data into a list \\
+                    while ($row = $execute_result->fetch_assoc()) {
+                        $courses[] = $row;
+                    }
+
+                    // Neatly put all venues and their data into a list if success \\
+                    if($GLOBALS['venue_success']){
+                        while($row = $GLOBALS['venue_data']->fetch_assoc()){
+                            $venues[] = $row;
+                        }
+                    } else {
+                        $venues = [];
+                    }
+
+                    // Create return Data \\
+                    $return_data = array('courses' => $courses, 'venues' => $venues);
+
+                    Generate_ResponseJSON(TRUE, 'SUCCESS - Courses have been returned', $return_data);
+                }
+            }
+        } else {
+            // Make the query \\
+            $query = "SELECT * FROM ODCoursesDB";
+            list($execute_success, $execute_result) = Generate_Query($query);
+
+            // Check for query execution success, failure response if FALSE \\
+            if($execute_success == FALSE){
+                Generate_ResponseJSON(FALSE, 'ERROR - Query Dropped', null); 
+                die();              
+            } else {
+                // Check for results, failure response if none else form json response \\
+                if(mysqli_num_rows($execute_result) == 0){
+                    // Failure response \\
+                    Generate_ResponseJSON(FALSE, 'ERROR - No courses were found', null); 
+                    die();                        
+                } else {
+                    // Neatly put all courses and their data into a table \\
+                    while ($row = $execute_result->fetch_assoc()) {
+                        $courses[] = $row;
+                    }
+
+                    // Neatly put all venues and their data into a list if success \\
+                    if($GLOBALS['venue_success']){
+                        while($row = $GLOBALS['venue_data']->fetch_assoc()){
+                            $venues[] = $row;
+                        }
+                    } else {
+                        $venues = [];
+                    }
+
+                    // Create return Data \\
+                    $return_data = array('courses' => $courses, 'venues' => $venues);
+
+                    Generate_ResponseJSON(TRUE, 'SUCCESS - Courses have been returned', $return_data);
+                }
+            }
+        }
+    }
+
+    function Refresh_Access_Code(){
+        // If user not logged in, return failure response \\
+        if(!isset($_SESSION['user_id'])){
+            Generate_ResponseJSON(FALSE, 'ERROR - You must be logged in to access this endpoint', null);
+            die();
+        } 
+        
+        // Attempt to find data using user id \\
+        list($valid, $data) = Get_User_Data($_SESSION['user_id']);
+
+        // If Data Found, check against it \\
+        if($valid){
+            // Check user level, if success refresh access code, otherwise failure response \\
+            if($data['user_level'] >= 1){
+                // Generate new code \\
+                $new_code = Generate_Code();
+
+                // Make the query \\
+                $query = "UPDATE ODCodesDB SET code = ? WHERE code_id = 1";
+                list($execute_success, $execute_result) = Generate_Query($query, array('s', $new_code));
+
+                // Check for results, failure response if not execute success \\
+                if($execute_success == TRUE){
+                    Generate_ResponseJSON(TRUE, 'SUCCESS - Access Registration Code has been regenerated', array('code' => $new_code));
+                } else {
+                    Generate_ResponseJSON(FALSE, 'ERROR - Query Dropped', null);
+                }
+                die();
+            }  else {
+                Generate_ResponseJSON(FALSE, 'ERROR - You are not authorized to access this endpoint', null);
+                die();
+            }
+        } else {
+            // No data found, return failure response \\
+            Generate_ResponseJSON(FALSE, 'ERROR - You are not authorized to access this endpoint', null);
+            die();
+        }
+    }
+
+    function Delete_Course($course_id){
+        
+        // Attempt to find data using user id \\
+        list($valid, $data) = Get_User_Data($_SESSION['user_id']);
+
+        // If Data Found, check against it \\
+        if($valid){
+            // Check user level, if success continue, otherwise failure response \\
+            if($data['user_level'] >= 1){
+                // Make the query \\
+                $query = "DELETE FROM ODCoursesDB WHERE course_id = ?";
+                list($execute_success, $execute_result) = Generate_Query($query, array('s', $course_id));
+
+                // Check for zero results \\
+                if($execute_result == 0){
+                    // Failure response \\
+                    Generate_ResponseJSON(FALSE, 'ERROR - Course does not exist in database, Query Dropped', null); 
+                    die();                        
+                }
+
+                // Check for results, failure response if not execute success \\
+                if($execute_success == TRUE){
+                    Generate_ResponseJSON(TRUE, 'SUCCESS - Course has been removed from the database', array('course_id' => $course_id));
+                } else {
+                    Generate_ResponseJSON(FALSE, 'ERROR - Query Dropped', null);
+                }
+
+                die();
+            }  else {
+                Generate_ResponseJSON(FALSE, 'ERROR - You are not authorized to access this endpoint', null);
+                die();
+            }
+        } else {
+            // No data found, return failure response \\
+            Generate_ResponseJSON(FALSE, 'ERROR - You are not authorized to access this endpoint', null);
+            die();
+        }
+    }
+
+    function Delete_User($user_id){
+        
+        // Attempt to find data using user id \\
+        list($valid, $data) = Get_User_Data($_SESSION['user_id']);
+
+        // If Data Found, check against it \\
+        if($valid){
+            // Check user level, if success continue, otherwise failure response \\
+            if($data['user_level'] >= 1){
+                // Make the query \\
+                $query = "DELETE FROM ODAccountsDB WHERE user_id = ?";
+                list($execute_success, $execute_result) = Generate_Query($query, array('s', $user_id));
+
+                // Check for zero results \\
+                if($execute_result == 0){
+                    // Failure response \\
+                    Generate_ResponseJSON(FALSE, 'ERROR - User does not exist in database, Query Dropped', null); 
+                    die();                        
+                }
+
+                // Check for results, failure response if not execute success \\
+                if($execute_success == TRUE){
+                    Generate_ResponseJSON(TRUE, 'SUCCESS - User has been deleted (removed) from the database', array('user_id' => $user_id));
+                } else {
+                    Generate_ResponseJSON(FALSE, 'ERROR - Query Dropped', null);
+                }
+                
+                die();
+            }  else {
+                Generate_ResponseJSON(FALSE, 'ERROR - You are not authorized to access this endpoint', null);
+                die();
+            }
+        } else {
+            // No data found, return failure response \\
+            Generate_ResponseJSON(FALSE, 'ERROR - You are not authorized to access this endpoint', null);
+            die();
+        }
+    }
 ?>
