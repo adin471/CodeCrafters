@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1024"> <!-- Desktop-optimized -->
+  <title>University of Wolverhampton Open Day</title>
+  <link rel="stylesheet" href="../admin_styles/admin_style.css">
+  <script>
+    function sanitizeInput(input) {
+      return input.replace(/[<>]/g, "").trim();
+    }
+
+    async function handleLogin(event) {
+      event.preventDefault();
+      let username = sanitizeInput(document.getElementById('login-username').value);
+      let password = sanitizeInput(document.getElementById('login-password').value);
+
+      if (username === '' || password === '') {
+        alert('Please enter both username and password.');
+        return;
+      }
+
+      let formData = new FormData();
+      formData.append("username", username);
+      formData.append("password", password);
+
+      try {
+        const response = await fetch("../../v2/login.php", {
+          method: "POST",
+          body: formData
+        });
+
+        if (!response.ok) throw new Error("Network error: Unable to reach server.");
+        const result = await response.json();
+
+        if (result.Success) {
+          alert("Login successful! Redirecting...");
+          window.location.href = "admin_landing.php";
+        } else {
+          alert(result.Message);
+        }
+      } catch (error) {
+        alert("ERROR: " + error.message);
+      }
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      document.getElementById("login-form").addEventListener("submit", handleLogin);
+    });
+  </script>
+</head>
+<body>
+  <header>
+    <img src="../../images/UoW logo.svg" alt="University of Wolverhampton Logo">
+  </header>
+
+  <main class="container">
+    <!-- Left column: Login form -->
+    <section class="left-column">
+      <form id="login-form">
+        <h2>Login</h2>
+        <label for="login-username">Username:</label><br>
+        <input type="text" id="login-username" name="username" required><br><br>
+
+        <label for="login-password">Password:</label><br>
+        <input type="password" id="login-password" name="password" required><br><br>
+
+        <button type="submit">Login</button>
+      </form>
+    </section>
+
+    <!-- Right column: Main content -->
+    <section class="main-content">
+      <h1>Welcome to the University of Wolverhampton Open Day</h1>
+      <p>
+        placeholder
+      </p>
+    </section>
+  </main>
+</body>
+</html>

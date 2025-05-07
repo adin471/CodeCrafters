@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1024"> <!-- Desktop-optimized -->
+  <title>University of Wolverhampton Open Day</title>
+  <link rel="stylesheet" href="../admin_styles/admin_style.css">
+  <script>
+    // Logout button logic
+    const logoutButton = document.getElementById('logout-button');
+
+    logoutButton.addEventListener('click', () => {
+      fetch('../../v2/logout.php', { method: 'POST' })
+        .then(response => response.json())
+        .then(data => {
+          if (data.Success) {
+            // Only redirect if logout was successful
+            window.location.href = '../index.php';
+          } else {
+            alert('Logout failed: ' + data.message);
+          }
+        })
+        .catch(error => {
+          console.error('Logout error:', error);
+          alert('An error occurred while logging out.');
+        });
+    });
+  </script>
+</head>
+<body>
+  <header>
+    <img src="../../images/UoW logo.svg" alt="University of Wolverhampton Logo">
+  </header>
+
+  <main class="container">
+    <!-- Left column: menu -->
+    <section class="left-column">
+      
+      <nav>
+        <h3><a href="admin_courses.php">Courses</a></h3>
+        <p>Courses description placeholder</p>
+
+        <h3><a href="admin_venues.php">Venues</a></h3>
+        <p>Placeholder text about venues</p>
+
+        <h3><a href="admin_users.php">Users</a></h3>
+        <p>Placeholder text about users</p>
+
+        <h3><a href="admin_register_new.php">Register New Admin</a></h3>
+        <p>Placeholder text about registering new admins</p>
+      </nav>
+      <button id="logout-button">Logout</button>
+    </section>
+
+    <!-- Right column: Main content -->
+    <section class="main-content">
+      <h1>Welcome to the University of Wolverhampton Open Day</h1>
+      <p>
+        placeholder
+      </p>
+    </section>
+  </main>
+</body>
+</html>
