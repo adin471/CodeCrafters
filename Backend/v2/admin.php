@@ -91,6 +91,8 @@
             }
 
             Delete_User($method['id']);
+        } elseif($method['action'] == 'delete_all_users'){
+            Delete_All_Users();
         }
     } else {
         Generate_ResponseJSON(FALSE, 'ERROR - Invalid parameters', null);

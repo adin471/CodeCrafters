@@ -571,6 +571,45 @@
                 Generate_ResponseJSON(FALSE, 'ERROR - You are not authorized to access this endpoint', null);
                 die();
             }
+        
+        function Delete_All_Users() {
+
+            // Attempt to find data using session user id \\
+            list($valid, $data) = Get_User_Data($_SESSION['user_id']);
+            
+            // If Data Found, check against it \\
+            if ($valid) {
+                // Check user level, if success continue, otherwise failure response \\
+                if ($data['user_level'] >= 1) {
+                    // Make the query to delete users with user_level = 0 \\
+                    $query = "DELETE FROM ODAccountsDB WHERE user_level = 0";
+                    list($execute_success, $execute_result) = Generate_Query($query, array());
+        
+                    // Check if any rows were affected \\
+                    if ($execute_result == 0) {
+                        Generate_ResponseJSON(FALSE, 'ERROR - No users with user_level 0 found in database, Query Dropped', null); 
+                        die();
+                    }
+            
+                    // Check for successful execution \\
+                    if ($execute_success == TRUE) {
+                        Generate_ResponseJSON(TRUE, 'SUCCESS - All users with user_level 0 have been deleted from the database', array('deleted_users_level' => 0));
+                    } else {
+                        Generate_ResponseJSON(FALSE, 'ERROR - Query Dropped', null);
+                    }
+            
+                    die();
+                } else {
+                    Generate_ResponseJSON(FALSE, 'ERROR - You are not authorized to access this endpoint', null);
+                    die();
+                    }
+            } else {
+                Generate_ResponseJSON(FALSE, 'ERROR - Invalid session or user data not found', null);
+                die();
+            }
+        }
+            
+        
         } else {
             // No data found, return failure response \\
             Generate_ResponseJSON(FALSE, 'ERROR - You are not authorized to access this endpoint', null);
