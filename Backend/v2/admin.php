@@ -91,8 +91,19 @@
             }
 
             Delete_User($method['id']);
+
+            //delete all user accounts who arent admin
         } elseif($method['action'] == 'delete_all_users'){
             Delete_All_Users();
+
+            //return access code
+        } elseif ($method['action'] == 'return_access_code') {
+            if ($data['user_level'] >= 1) {
+                list($success, $result) = Return_Access_Code();
+                Generate_ResponseJSON($success, $success ? 'Access code retrieved successfully' : 'Failed to retrieve access code', $result);
+            } else {
+                Generate_ResponseJSON(FALSE, 'Unauthorized: Admin access required', null);
+            }
         }
     } else {
         Generate_ResponseJSON(FALSE, 'ERROR - Invalid parameters', null);
