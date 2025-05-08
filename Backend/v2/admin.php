@@ -105,9 +105,11 @@
                     Generate_ResponseJSON(TRUE, 'SUCCESS - Access code retrieved successfully', $code_data['code']);
                 } else {
                     Generate_ResponseJSON(FALSE, 'ERROR - Failed to retrieve access code', $result);
+                    die();
                 }
             } else {
                 Generate_ResponseJSON(FALSE, 'ERROR - Admin access required', null);
+                die();
             }
         }
     } else {
