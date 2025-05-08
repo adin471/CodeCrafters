@@ -2,7 +2,7 @@
     // set $method as one of the below specified.
     // 1 - > $_GET for testing purposes 
     // 2 - > $_POST for live version.
-
+    
     $method = $_GET;
     include('main.php');
 
@@ -98,11 +98,16 @@
 
             //return access code
         } elseif ($method['action'] == 'return_access_code') {
-            if ($data['user_level'] >= 1) {
+            if ($_SESSION['user_level'] >= 1) {
                 list($success, $result) = Return_Access_Code();
-                Generate_ResponseJSON($success, $success ? 'Access code retrieved successfully' : 'Failed to retrieve access code', $result);
+                if ($success) {
+                    $code_data = $result->fetch_assoc();
+                    Generate_ResponseJSON(TRUE, 'SUCCESS - Access code retrieved successfully', $code_data['code']);
+                } else {
+                    Generate_ResponseJSON(FALSE, 'ERROR - Failed to retrieve access code', $result);
+                }
             } else {
-                Generate_ResponseJSON(FALSE, 'Unauthorized: Admin access required', null);
+                Generate_ResponseJSON(FALSE, 'ERROR - Admin access required', null);
             }
         }
     } else {
@@ -110,3 +115,8 @@
         die();  
     }
 ?>
+
+
+
+
+
