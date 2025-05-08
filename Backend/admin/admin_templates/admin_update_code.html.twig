@@ -6,18 +6,18 @@
   <title>University of Wolverhampton Open Day</title>
   <link rel="stylesheet" href="../admin_styles/admin_style.css">
   <script>
-    // Logout button logic
+    // Page behavior
     document.addEventListener('DOMContentLoaded', () => {
       const logoutButton = document.getElementById('logout-button');
       const accessCodeDisplay = document.getElementById('access-code');
-      //const updateButton = document.getElementById('update-code-button');
+      const updateButton = document.getElementById('update-code-button');
 
-      // Load current access code from API
-      fetch('../../v2/admin.php?action=refreshaccesscode')
+      // Load current access code
+      fetch('../../v2/admin.php?action=return_access_code')
         .then(response => response.json())
         .then(data => {
           if (data.Success && data.Data) {
-            accessCodeDisplay.textContent = data.Data[0]?.access_code || 'Code not found';
+            accessCodeDisplay.textContent = data.Data|| 'Code not found';
           } else {
             accessCodeDisplay.textContent = 'Failed to load access code';
           }
@@ -27,6 +27,27 @@
           accessCodeDisplay.textContent = 'Error loading access code';
         });
 
+      // Handle update button click
+      updateButton.addEventListener('click', () => {
+        fetch('../../v2/admin.php?action=refreshaccesscode', {
+          method: 'POST'
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.Success && data.Data) {
+            // Reload the page to fetch the new code
+            location.reload();
+          } else {
+            alert('Failed to update access code: ' + data.Message);
+          }
+        })
+        .catch(error => {
+          console.error('Update error:', error);
+          alert('An error occurred while updating the code.');
+        });
+      });
+
+      // Handle logout
       logoutButton.addEventListener('click', () => {
         fetch('../../v2/logout.php', { method: 'POST' })
           .then(response => response.json())
@@ -42,7 +63,6 @@
             alert('An error occurred while logging out.');
           });
       });
-
     });
   </script>
 </head>
