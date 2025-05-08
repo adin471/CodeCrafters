@@ -539,8 +539,7 @@
         }
     }
 
-    function Delete_User($user_id){
-        
+    function Delete_User($user_id){   
         // Attempt to find data using user id \\
         list($valid, $data) = Get_User_Data($_SESSION['user_id']);
 
@@ -571,49 +570,128 @@
                 Generate_ResponseJSON(FALSE, 'ERROR - You are not authorized to access this endpoint', null);
                 die();
             }
-        
-        function Delete_All_Users() {
+        }
+    }
 
-            // Attempt to find data using session user id \\
-            list($valid, $data) = Get_User_Data($_SESSION['user_id']);
-            
-            // If Data Found, check against it \\
-            if ($valid) {
-                // Check user level, if success continue, otherwise failure response \\
-                if ($data['user_level'] >= 1) {
-                    // Make the query to delete users with user_level = 0 \\
-                    $query = "DELETE FROM ODAccountsDB WHERE user_level = 0";
-                    list($execute_success, $execute_result) = Generate_Query($query, array());
+    function Delete_All_Users() {
+        // Attempt to find data using session user id \\
+        list($valid, $data) = Get_User_Data($_SESSION['user_id']);
         
-                    // Check if any rows were affected \\
-                    if ($execute_result == 0) {
-                        Generate_ResponseJSON(FALSE, 'ERROR - No users with user_level 0 found in database, Query Dropped', null); 
-                        die();
+        // If Data Found, check against it \\
+        if ($valid) {
+            // Check user level, if success continue, otherwise failure response \\
+            if ($data['user_level'] >= 1) {
+                // Make the query to delete users with user_level = 0 \\
+                $query = "DELETE FROM ODAccountsDB WHERE user_level = 0";
+                list($execute_success, $execute_result) = Generate_Query($query, array());
+    
+                // Check if any rows were affected \\
+                if ($execute_result == 0) {
+                    Generate_ResponseJSON(FALSE, 'ERROR - No users with user_level 0 found in database, Query Dropped', null); 
+                    die();
+                }
+        
+                // Check for successful execution \\
+                if ($execute_success == TRUE) {
+                    Generate_ResponseJSON(TRUE, 'SUCCESS - All users with user_level 0 have been deleted from the database', array('deleted_users_level' => 0));
+                } else {
+                    Generate_ResponseJSON(FALSE, 'ERROR - Query Dropped', null);
+                }
+        
+                die();
+            } else {
+                Generate_ResponseJSON(FALSE, 'ERROR - You are not authorized to access this endpoint', null);
+                die();
+            }
+        } else {
+            Generate_ResponseJSON(FALSE, 'ERROR - Invalid session or user data not found', null);
+            die();
+        }
+    }
+
+    function Get_Venues(){
+       // Attempt to find data using user id \\
+       list($valid, $data) = Get_User_Data($_SESSION['user_id']);
+
+       // If Data Found, check against it \\
+       if($valid){
+           // Check user level, if success continue, otherwise failure response \\
+           if($data['user_level'] >= 1){
+                // Make the query \\
+                list($execute_success, $execute_result) = Return_Venues();
+
+                if($execute_success){
+
+                    while($row = $execute_result->fetch_assoc()){
+                        $venuesG[] = $row;
                     }
-            
-                    // Check for successful execution \\
-                    if ($execute_success == TRUE) {
-                        Generate_ResponseJSON(TRUE, 'SUCCESS - All users with user_level 0 have been deleted from the database', array('deleted_users_level' => 0));
-                    } else {
-                        Generate_ResponseJSON(FALSE, 'ERROR - Query Dropped', null);
-                    }
-            
+
+                    Generate_ResponseJSON(TRUE, 'SUCCESS - Venue Data Retrieved', $venuesG);
                     die();
                 } else {
-                    Generate_ResponseJSON(FALSE, 'ERROR - You are not authorized to access this endpoint', null);
+                    Generate_ResponseJSON(FALSE, 'ERROR - Failed to get venue data', null);
                     die();
+                }
+           } else {
+                Generate_ResponseJSON(FALSE, 'ERROR - You are not authorized to access this endpoint', null);
+                die();
+           }
+       }
+    }
+
+    function Get_Users(){
+        // Attempt to find data using user id \\
+        list($valid, $data) = Get_User_Data($_SESSION['user_id']);
+ 
+        // If Data Found, check against it \\
+        if($valid){
+            // Check user level, if success continue, otherwise failure response \\
+            if($data['user_level'] >= 1){
+                // Make the query \\
+                $query = "SELECT * FROM ODAccountsDB WHERE user_level = 0";
+                list($execute_success, $execute_result) = Generate_Query($query);
+ 
+                if($execute_success){
+ 
+                    while($row = $execute_result->fetch_assoc()){
+                        $usersG[] = $row;
                     }
+ 
+                    Generate_ResponseJSON(TRUE, 'SUCCESS - Users Retrieved', $usersG);
+                    die();
+                 } else {
+                    Generate_ResponseJSON(FALSE, 'ERROR - Failed to get users data', null);
+                    die();
+                }
             } else {
-                Generate_ResponseJSON(FALSE, 'ERROR - Invalid session or user data not found', null);
+                Generate_ResponseJSON(FALSE, 'ERROR - You are not authorized to access this endpoint', null);
                 die();
             }
         }
-            
-        
-        } else {
-            // No data found, return failure response \\
-            Generate_ResponseJSON(FALSE, 'ERROR - You are not authorized to access this endpoint', null);
-            die();
+    }
+
+    function Get_Access_Code(){
+        // Attempt to find data using user id \\
+        list($valid, $data) = Get_User_Data($_SESSION['user_id']);
+ 
+        // If Data Found, check against it \\
+        if($valid){
+            // Check user level, if success continue, otherwise failure response \\
+            if($data['user_level'] >= 1){
+                list($execute_success, $execute_result) = Return_Access_Code();
+ 
+                if($execute_success){
+                    // Return Access Code \\
+                    Generate_ResponseJSON(TRUE, 'SUCCESS - Access Code Retrieved', $execute_result->fetch_assoc()['code']);
+                    die();
+                 } else {
+                    Generate_ResponseJSON(FALSE, 'ERROR - Failed to get access code', null);
+                    die();
+                }
+            } else {
+                Generate_ResponseJSON(FALSE, 'ERROR - You are not authorized to access this endpoint', null);
+                die();
+            }
         }
     }
 ?>

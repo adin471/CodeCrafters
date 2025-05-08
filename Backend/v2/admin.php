@@ -90,35 +90,23 @@
                 die(); 
             }
 
+
             Delete_User($method['id']);
-
-            //delete all user accounts who arent admin
         } elseif($method['action'] == 'delete_all_users'){
+            // Delete all non-admin Users \\
             Delete_All_Users();
-
-            //return access code
-        } elseif ($method['action'] == 'return_access_code') {
-            if ($_SESSION['user_level'] >= 1) {
-                list($success, $result) = Return_Access_Code();
-                if ($success) {
-                    $code_data = $result->fetch_assoc();
-                    Generate_ResponseJSON(TRUE, 'SUCCESS - Access code retrieved successfully', $code_data['code']);
-                } else {
-                    Generate_ResponseJSON(FALSE, 'ERROR - Failed to retrieve access code', $result);
-                    die();
-                }
-            } else {
-                Generate_ResponseJSON(FALSE, 'ERROR - Admin access required', null);
-                die();
-            }
+        } elseif ($method['action'] == 'return_access_code'){
+            // Return Access Code \\
+            Get_Access_Code();
+        } elseif($method['action'] == 'return_venues'){
+            // Return Venue Data \\
+            Get_Venues();
+        } elseif($method['action'] == 'return_users'){
+            // Return Users Data \\
+            Get_Users();
         }
     } else {
         Generate_ResponseJSON(FALSE, 'ERROR - Invalid parameters', null);
         die();  
     }
 ?>
-
-
-
-
-
