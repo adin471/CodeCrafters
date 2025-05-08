@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=1024"> <!-- Desktop-optimized -->
+  <meta name="viewport" content="width=1024">
   <title>University of Wolverhampton Open Day</title>
   <link rel="stylesheet" href="../admin_styles/admin_style.css">
   <script>
@@ -34,11 +34,30 @@
         const result = await response.json();
 
         if (result.Success) {
-          alert("Login successful! Redirecting...");
-          window.location.href = "admin_landing.php";
+          try {
+            const sessionResponse = await fetch("../../v2/set_session.php", {
+              method: "POST"
+            });
+
+            if (!sessionResponse.ok) {
+              throw new Error("Failed to reach session setup.");
+            }
+
+            const sessionResult = await sessionResponse.json();
+
+            if (sessionResult.status === "session set") {
+              alert("Login successful! Redirecting...");
+              window.location.href = "admin_landing.php";
+            } else {
+              throw new Error("Session could not be established.");
+            }
+          } catch (sessionError) {
+            alert("ERROR: " + sessionError.message);
+          }
         } else {
           alert(result.Message);
         }
+
       } catch (error) {
         alert("ERROR: " + error.message);
       }
@@ -49,6 +68,7 @@
     });
   </script>
 </head>
+
 <body>
   <header>
     <img src="../../images/UoW logo.svg" alt="University of Wolverhampton Logo">
@@ -71,9 +91,9 @@
 
     <!-- Right column: Main content -->
     <section class="main-content">
-      <h1>Welcome to the University of Wolverhampton Open Day</h1>
+      <h1>Login</h1>
       <p>
-        placeholder
+        Please log in to access the features of this site.
       </p>
     </section>
   </main>
