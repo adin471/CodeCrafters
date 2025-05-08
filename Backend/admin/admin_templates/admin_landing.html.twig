@@ -25,7 +25,7 @@
         .then(response => response.json())
         .then(data => {
           if (data.Success) {
-            window.location.href = '../index.php';
+            window.location.href = 'admin_login.php';
           } else {
             alert(`Logout failed: ${data.message}`);
           }
