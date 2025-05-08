@@ -6,25 +6,61 @@
   <title>University of Wolverhampton Open Day</title>
   <link rel="stylesheet" href="../admin_styles/admin_style.css">
   <script>
-    // Logout button logic
-    const logoutButton = document.getElementById('logout-button');
+    document.addEventListener('DOMContentLoaded', () => {
+      const logoutButton = document.getElementById('logout-button');
 
-    logoutButton.addEventListener('click', () => {
+      if (!logoutButton) {
+        console.warn("Logout button not found.");
+        return;
+      }
+
+      logoutButton.addEventListener('click', () => {
+        logoutUser();
+      });
+
+      loadVenues(); // Load venues on page load
+    });
+
+    function logoutUser() {
       fetch('../../v2/logout.php', { method: 'POST' })
         .then(response => response.json())
         .then(data => {
           if (data.Success) {
-            // Only redirect if logout was successful
-            window.location.href = '../index.php';
+            window.location.href = 'admin_login.php';
           } else {
-            alert('Logout failed: ' + data.message);
+            alert(`Logout failed: ${data.message}`);
           }
         })
         .catch(error => {
           console.error('Logout error:', error);
           alert('An error occurred while logging out.');
         });
-    });
+    }
+
+    function loadVenues() {
+      fetch('../../v2/admin.php?action=return_venues')
+        .then(response => response.json())
+        .then(data => {
+          if (data.Success && data.Data) {
+            const tableBody = document.querySelector("#venues-table tbody");
+            data.Data.forEach(venue => {
+              const row = document.createElement("tr");
+              row.innerHTML = `
+                <td>${venue.venue_id}</td>
+                <td>${venue.building_name}</td>
+                <td>${venue.floor}</td>
+              `;
+              tableBody.appendChild(row);
+            });
+          } else {
+            alert('Failed to load venue data.');
+          }
+        })
+        .catch(error => {
+          console.error("Error loading venues:", error);
+          alert("An error occurred while loading venue data.");
+        });
+    }
   </script>
 </head>
 <body>
@@ -35,7 +71,6 @@
   <main class="container">
     <!-- Left column: menu -->
     <section class="left-column">
-      
       <nav>
         <h3><a href="admin_courses.php">Courses</a></h3>
         <p>View, edit and delete existing courses, or add new courses.</p>
@@ -58,9 +93,18 @@
     <!-- Right column: Main content -->
     <section class="main-content">
       <h1>Venues List</h1>
-      <p>
-        Please choose a task from the listings on the right.
-      </p>
+      <table id="venues-table" class="venues-table">
+        <thead>
+          <tr>
+            <th>Venue ID</th>
+            <th>Building Name</th>
+            <th>Floor</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Data will be injected here -->
+        </tbody>
+      </table>
     </section>
   </main>
 </body>

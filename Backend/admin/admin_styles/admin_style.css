@@ -82,3 +82,34 @@ header {
 .blue-button:hover {
   background-color: #0056b3; /* Darker on hover */
 }
+
+
+.venues-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1.5em;
+  font-family: Arial, sans-serif;
+  background-color: #fff;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+.venues-table th,
+.venues-table td {
+  border: 1px solid #ccc;
+  padding: 12px;
+  text-align: left;
+}
+
+.venues-table th {
+  background-color: #f0f0f0;
+  font-weight: bold;
+}
+
+.venues-table tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+.venues-table tr:hover {
+  background-color: #eef;
+  cursor: default;
+}
