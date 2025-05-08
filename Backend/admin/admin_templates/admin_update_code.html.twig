@@ -7,23 +7,42 @@
   <link rel="stylesheet" href="../admin_styles/admin_style.css">
   <script>
     // Logout button logic
-    const logoutButton = document.getElementById('logout-button');
+    document.addEventListener('DOMContentLoaded', () => {
+      const logoutButton = document.getElementById('logout-button');
+      const accessCodeDisplay = document.getElementById('access-code');
+      //const updateButton = document.getElementById('update-code-button');
 
-    logoutButton.addEventListener('click', () => {
-      fetch('../../v2/logout.php', { method: 'POST' })
+      // Load current access code from API
+      fetch('../../v2/admin.php?action=refreshaccesscode')
         .then(response => response.json())
         .then(data => {
-          if (data.Success) {
-            // Only redirect if logout was successful
-            window.location.href = '../index.php';
+          if (data.Success && data.Data) {
+            accessCodeDisplay.textContent = data.Data[0]?.access_code || 'Code not found';
           } else {
-            alert('Logout failed: ' + data.message);
+            accessCodeDisplay.textContent = 'Failed to load access code';
           }
         })
         .catch(error => {
-          console.error('Logout error:', error);
-          alert('An error occurred while logging out.');
+          console.error('Fetch error:', error);
+          accessCodeDisplay.textContent = 'Error loading access code';
         });
+
+      logoutButton.addEventListener('click', () => {
+        fetch('../../v2/logout.php', { method: 'POST' })
+          .then(response => response.json())
+          .then(data => {
+            if (data.Success) {
+              window.location.href = 'admin_login.php';
+            } else {
+              alert('Logout failed: ' + data.message);
+            }
+          })
+          .catch(error => {
+            console.error('Logout error:', error);
+            alert('An error occurred while logging out.');
+          });
+      });
+
     });
   </script>
 </head>
@@ -35,7 +54,6 @@
   <main class="container">
     <!-- Left column: menu -->
     <section class="left-column">
-      
       <nav>
         <h3><a href="admin_courses.php">Courses</a></h3>
         <p>View, edit and delete existing courses, or add new courses.</p>
@@ -58,6 +76,10 @@
     <!-- Right column: Main content -->
     <section class="main-content">
       <h1>Update Register Code</h1>
+      <p>Current Access Code:</p>
+      <div id="access-code">Loading...</div>
+      <br>
+      <button id="update-code-button" class="blue-button">Update Code</button>
     </section>
   </main>
 </body>
