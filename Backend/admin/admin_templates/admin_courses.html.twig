@@ -30,6 +30,13 @@
           courses.forEach(course => {
             const row = document.createElement("tr");
 
+            const url = `admin_edit_course.php?course_id=${course.course_id}` +
+                        `&name=${encodeURIComponent(course.course_name)}` +
+                        `&desc=${encodeURIComponent(course.course_description)}` +
+                        `&venue=${course.venue_id}` +
+                        `&start=${encodeURIComponent(course.course_start)}` +
+                        `&end=${encodeURIComponent(course.course_end)}`;
+
             row.innerHTML = `
               <td>${course.course_id}</td>
               <td>${course.course_name}</td>
@@ -37,7 +44,7 @@
               <td>${course.venue_id}</td>
               <td>${course.course_start}</td>
               <td>${course.course_end}</td>
-              <td><button class="blue-button">Edit Course</button></td>
+              <td><a href="${url}" class="blue-button">Edit</a></td>
               <td><button class="blue-button delete-button" data-id="${course.course_id}">Delete</button></td>
             `;
 
@@ -141,7 +148,7 @@
           </tr>
         </thead>
         <tbody>
-          <!-- Course rows will be injected here -->
+          <!-- Rows will be injected by JavaScript -->
         </tbody>
       </table>
     </section>
