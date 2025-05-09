@@ -26,7 +26,7 @@
   <main>
     <h1>Campus Map</h1>
     <div class="map-container">
-      <img src="../images/map.svg" alt="University of Wolverhampton Campus Map" id="campus-map">
+      <iframe src="https://www.google.com/maps/d/u/0/embed?mid=1X_kWbp70-WKHxhnhysCzf9Brqqrxugc" width="100%" height="600" style="border:0;" allowfullscreen="" loading="lazy"></iframe>
     </div>
   </main>
 
@@ -41,73 +41,29 @@
     document.addEventListener("DOMContentLoaded", function () {
       const supportIcon = document.getElementById("support-icon");
       const supportInfo = document.getElementById("support-info");
-      const mapContainer = document.querySelector(".map-container");
-      const mapImage = document.getElementById("campus-map");
-
-      if (!mapContainer || !mapImage) {
-        console.error("Error: .map-container or #campus-map not found. Ensure the HTML element exists.");
-        return;
-      }
-
-      let scale = 1;
-      let panX = 0;
-      let panY = 0;
-      let isDragging = false;
-      let startX, startY;
 
       // Toggle Support Info
       supportIcon.addEventListener("click", () => {
         supportInfo.classList.toggle("hidden");
       });
 
-      // Zoom Functionality
-      mapContainer.addEventListener("wheel", function (e) {
-        e.preventDefault();
-        let zoomIntensity = 0.1;
-        scale += e.deltaY > 0 ? -zoomIntensity : zoomIntensity;
-        scale = Math.min(Math.max(0.5, scale), 3); // Limit zoom range
-        mapImage.style.transform = `translate(${panX}px, ${panY}px) scale(${scale})`;
-      });
-
-      // Drag Functionality
-      mapImage.addEventListener("mousedown", function (e) {
-        isDragging = true;
-        startX = e.clientX - panX;
-        startY = e.clientY - panY;
-        mapImage.style.cursor = "grabbing";
-      });
-
-      document.addEventListener("mousemove", function (e) {
-        if (!isDragging) return;
-        panX = e.clientX - startX;
-        panY = e.clientY - startY;
-        mapImage.style.transform = `translate(${panX}px, ${panY}px) scale(${scale})`;
-      });
-
-      document.addEventListener("mouseup", function () {
-        isDragging = false;
-        mapImage.style.cursor = "grab";
-      });
-    });
-
       // Logout button logic
-    const logoutButton = document.getElementById('logout-button');
-
-    logoutButton.addEventListener('click', () => {
-      fetch('../v2/logout.php', { method: 'POST' })
-        .then(response => response.json())
-        .then(data => {
-          if (data.Success) {
-            // Only redirect if logout was successful
-            window.location.href = '../index.php';
-          } else {
-            alert('Logout failed: ' + data.message);
-          }
-        })
-        .catch(error => {
-          console.error('Logout error:', error);
-          alert('An error occurred while logging out.');
-        });
+      const logoutButton = document.getElementById('logout-button');
+      logoutButton.addEventListener('click', () => {
+        fetch('../v2/logout.php', { method: 'POST' })
+          .then(response => response.json())
+          .then(data => {
+            if (data.Success) {
+              window.location.href = '../index.php';
+            } else {
+              alert('Logout failed: ' + data.message);
+            }
+          })
+          .catch(error => {
+            console.error('Logout error:', error);
+            alert('An error occurred while logging out.');
+          });
+      });
     });
   </script>
 </body>
