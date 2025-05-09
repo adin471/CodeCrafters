@@ -37,7 +37,7 @@
 
             // Check for new course description \\
             if(isset($method['coursedesc'])){
-                $course_desc = $method['coursename'];
+                $course_desc = $method['coursedesc'];
             }
 
             // Check for new venue id \\
