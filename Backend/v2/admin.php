@@ -74,11 +74,6 @@
             $course_start = 'Keep';
             $course_end = 'Keep';
 
-            // Check for course Entry ID (PK) \\
-            if(!isset($method['id'])){
-                Generate_ResponseJSON(FALSE, 'ERROR - Missing Course Entry ID', null);
-                die(); 
-            }
 
             // Check for new course name \\
             if(isset($method['coursename'])){
