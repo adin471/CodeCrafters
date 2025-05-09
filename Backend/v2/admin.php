@@ -68,13 +68,55 @@
         } elseif($method['action'] == 'add_course'){
             // Check for course Entry ID (PK) \\
 
-            $course_name = 'None';
-            $course_desc = 'None';
-            $venue_id = 'None';
-            $course_start = 'None';
-            $course_end = 'None';
+            $course_name = 'Keep';
+            $course_desc = 'Keep';
+            $venue_id = 'Keep';
+            $course_start = 'Keep';
+            $course_end = 'Keep';
 
-            // Add_Course();
+            // Check for course Entry ID (PK) \\
+            if(!isset($method['id'])){
+                Generate_ResponseJSON(FALSE, 'ERROR - Missing Course Entry ID', null);
+                die(); 
+            }
+
+            // Check for new course name \\
+            if(isset($method['coursename'])){
+                $course_name = $method['coursename'];
+            }
+
+            // Check for new course description \\
+            if(isset($method['coursedesc'])){
+                $course_desc = $method['coursename'];
+            }
+
+            // Check for new venue id \\
+            if(isset($method['coursevenue'])){
+                $venue_id = $method['coursevenue'];
+            }
+
+            // Check for new course start \\
+            if(isset($method['coursestart'])){
+
+                // Make sure its numeric, conver to date time and set \\
+                if(is_numeric($method['coursestart'])){
+                    $course_start = date("Y-m-d H:i:s", $epoch);
+                }
+
+            }
+
+            // Check for new course end \\
+            if(isset($method['courseend'])){
+
+                // Make sure its numeric, conver to date time and set \\
+                if(is_numeric($method['courseend'])){
+                    $course_end = date("Y-m-d H:i:s", $epoch);
+                }
+            }
+
+            if($course_name != 'None' && $course_desc != 'None' && $venue_id !=  'None' && $course_start !=  'None'  && course_start !=  'None'){
+                //Add_Course();
+            }
         } elseif($method['action'] == 'delete_course'){
             // Check for course Entry ID (PK) \\
             if(!isset($method['id'])){
@@ -89,7 +131,6 @@
                 Generate_ResponseJSON(FALSE, 'ERROR - Missing User Account ID', null);
                 die(); 
             }
-
 
             Delete_User($method['id']);
         } elseif($method['action'] == 'delete_all_users'){
