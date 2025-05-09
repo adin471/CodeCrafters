@@ -2,29 +2,71 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=1024"> <!-- Desktop-optimized -->
+  <meta name="viewport" content="width=1024">
   <title>University of Wolverhampton Open Day</title>
   <link rel="stylesheet" href="../admin_styles/admin_style.css">
   <script>
-    // Logout button logic
-    const logoutButton = document.getElementById('logout-button');
+    document.addEventListener('DOMContentLoaded', () => {
+      const logoutButton = document.getElementById('logout-button');
 
-    logoutButton.addEventListener('click', () => {
+      if (!logoutButton) {
+        console.warn("Logout button not found.");
+        return;
+      }
+
+      logoutButton.addEventListener('click', () => {
+        logoutUser();
+      });
+
+      // Fetch and load courses
+      fetch("../../v2/courses.php", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: "search="
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.Success) {
+          const courses = data.Data.courses;
+          const tbody = document.querySelector("#courses-table tbody");
+          courses.forEach(course => {
+            const row = document.createElement("tr");
+            row.innerHTML = `
+              <td>${course.course_id}</td>
+              <td>${course.course_name}</td>
+              <td>${course.course_description}</td>
+              <td>${course.venue_id}</td>
+              <td>${course.course_start}</td>
+              <td>${course.course_end}</td>
+              <td><button class="blue-button">Edit Course</button></td>
+            `;
+            tbody.appendChild(row);
+          });
+        } else {
+          alert("Failed to load courses: " + data.Message);
+        }
+      })
+      .catch(error => {
+        console.error("Fetch error:", error);
+        alert("An error occurred while loading courses.");
+      });
+    });
+
+    function logoutUser() {
       fetch('../../v2/logout.php', { method: 'POST' })
         .then(response => response.json())
         .then(data => {
           if (data.Success) {
-            // Only redirect if logout was successful
-            window.location.href = '../index.php';
+            window.location.href = 'admin_login.php';
           } else {
-            alert('Logout failed: ' + data.message);
+            alert(`Logout failed: ${data.message}`);
           }
         })
         .catch(error => {
           console.error('Logout error:', error);
           alert('An error occurred while logging out.');
         });
-    });
+    }
   </script>
 </head>
 <body>
@@ -35,7 +77,6 @@
   <main class="container">
     <!-- Left column: menu -->
     <section class="left-column">
-      
       <nav>
         <h3><a href="admin_courses.php">Courses</a></h3>
         <p>View, edit and delete existing courses, or add new courses.</p>
@@ -58,6 +99,23 @@
     <!-- Right column: Main content -->
     <section class="main-content">
       <h1>Courses</h1>
+      <button class="blue-button" style="margin-bottom: 20px;">Add Course</button>
+      <table class="venues-table" id="courses-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Description</th>
+            <th>Venue</th>
+            <th>Start</th>
+            <th>End</th>
+            <th>Edit</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Course rows will be injected here -->
+        </tbody>
+      </table>
     </section>
   </main>
 </body>
