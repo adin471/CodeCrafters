@@ -2,20 +2,26 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=1024"> <!-- Desktop-optimized -->
+  <meta name="viewport" content="width=1024">
   <title>University of Wolverhampton Open Day</title>
   <link rel="stylesheet" href="../admin_styles/admin_style.css">
   <script>
-    // Logout button logic
-    const logoutButton = document.getElementById('logout-button');
+    document.addEventListener('DOMContentLoaded', () => {
+      const logoutButton = document.getElementById('logout-button');
+      if (logoutButton) {
+        logoutButton.addEventListener('click', () => logoutUser());
+      }
 
-    logoutButton.addEventListener('click', () => {
+      fetchUsers();
+    });
+
+    // Logout
+    function logoutUser() {
       fetch('../../v2/logout.php', { method: 'POST' })
         .then(response => response.json())
         .then(data => {
           if (data.Success) {
-            // Only redirect if logout was successful
-            window.location.href = '../index.php';
+            window.location.href = 'admin_login.php';
           } else {
             alert('Logout failed: ' + data.message);
           }
@@ -24,7 +30,84 @@
           console.error('Logout error:', error);
           alert('An error occurred while logging out.');
         });
-    });
+    }
+
+    // Fetch users
+    function fetchUsers() {
+      fetch('../../v2/admin.php?action=return_users', {
+        method: 'POST'
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.Success && data.Data) {
+          populateUserTable(data.Data);
+        } else {
+          alert('Failed to fetch users: ' + (data.message || data.Message || 'No message from server'));
+        }
+      })
+      .catch(error => {
+        console.error('Fetch users error:', error);
+        alert('An error occurred while fetching users.');
+      });
+    }
+
+    // Populate table
+    function populateUserTable(users) {
+      const tbody = document.querySelector('#users-table tbody');
+      tbody.innerHTML = '';
+
+      users.forEach(user => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${user.user_id}</td>
+          <td>${user.username}</td>
+          <td><button class="blue-button" onclick="deleteUser('${user.user_id}')">Delete</button></td>
+        `;
+        tbody.appendChild(row);
+      });
+    }
+
+    function deleteUser(userId) {
+      if (!confirm('Are you sure you want to delete this user?')) return;
+
+      fetch(`../../v2/admin.php?action=delete_user&id=${encodeURIComponent(userId)}`, {
+        method: 'POST'
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.Success) {
+          location.reload();
+        } else {
+          alert('Failed to delete user: ' + (data.message || data.Message || 'No server message'));
+        }
+      })
+      .catch(error => {
+        console.error('Delete user error:', error);
+        alert('An error occurred while deleting the user.');
+      });
+    }
+
+    function deleteAllUsers() {
+      if (!confirm('Are you sure you want to delete ALL non-admin users?')) return;
+
+      fetch('../../v2/admin.php?action=delete_all_users') // use GET only to prevent malformed POST issues
+        .then(response => {
+          if (!response.ok) throw new Error('HTTP error ' + response.status);
+          return response.json();
+        })
+        .then(data => {
+          console.log("Delete All Users Response:", data);
+          if (data.Success) {
+            location.reload();
+          } else {
+            alert('Delete all users failed: ' + (data.Message || data.message || 'Unknown reason'));
+          }
+        })
+        .catch(error => {
+          console.error('Delete all users error:', error);
+          alert('An error occurred while deleting all users.');
+        });
+    }
   </script>
 </head>
 <body>
@@ -33,9 +116,8 @@
   </header>
 
   <main class="container">
-    <!-- Left column: menu -->
+    <!-- Sidebar -->
     <section class="left-column">
-      
       <nav>
         <h3><a href="admin_courses.php">Courses</a></h3>
         <p>View, edit and delete existing courses, or add new courses.</p>
@@ -55,9 +137,22 @@
       <button id="logout-button">Logout</button>
     </section>
 
-    <!-- Right column: Main content -->
+    <!-- Main content -->
     <section class="main-content">
       <h1>Users List</h1>
+      <button class="blue-button" onclick="deleteAllUsers()">Delete All Users</button>
+      <table class="venues-table" id="users-table">
+        <thead>
+          <tr>
+            <th>User ID</th>
+            <th>Username</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Populated dynamically -->
+        </tbody>
+      </table>
     </section>
   </main>
 </body>
