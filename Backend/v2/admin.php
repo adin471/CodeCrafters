@@ -114,7 +114,7 @@
                 }
             }
 
-            if($course_name != 'None' && $course_desc != 'None' && $venue_id !=  'None' && $course_start !=  'None'  && course_start !=  'None'){
+            if($course_name != 'None' && $course_desc != 'None' && $venue_id !=  'None' && $course_start !=  'None'  && $course_start !=  'None'){
                 //Add_Course();
             }
         } elseif($method['action'] == 'delete_course'){
