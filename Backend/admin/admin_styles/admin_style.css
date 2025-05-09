@@ -113,3 +113,9 @@ header {
   background-color: #eef;
   cursor: default;
 }
+
+.add-course-button {
+  display: inline-block;
+  text-decoration: none;
+  margin-bottom: 20px;
+}

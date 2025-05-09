@@ -9,16 +9,13 @@
     document.addEventListener('DOMContentLoaded', () => {
       const logoutButton = document.getElementById('logout-button');
 
-      if (!logoutButton) {
-        console.warn("Logout button not found.");
-        return;
+      if (logoutButton) {
+        logoutButton.addEventListener('click', () => {
+          logoutUser();
+        });
       }
 
-      logoutButton.addEventListener('click', () => {
-        logoutUser();
-      });
-
-      // Fetch and load courses
+      // Fetch and display courses
       fetch("../../v2/courses.php", {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -29,8 +26,10 @@
         if (data.Success) {
           const courses = data.Data.courses;
           const tbody = document.querySelector("#courses-table tbody");
+
           courses.forEach(course => {
             const row = document.createElement("tr");
+
             row.innerHTML = `
               <td>${course.course_id}</td>
               <td>${course.course_name}</td>
@@ -39,8 +38,36 @@
               <td>${course.course_start}</td>
               <td>${course.course_end}</td>
               <td><button class="blue-button">Edit Course</button></td>
+              <td><button class="blue-button delete-button" data-id="${course.course_id}">Delete</button></td>
             `;
+
             tbody.appendChild(row);
+          });
+
+          // Add delete functionality
+          document.querySelectorAll('.delete-button').forEach(button => {
+            button.addEventListener('click', function () {
+              const courseId = this.getAttribute('data-id');
+
+              if (confirm(`Are you sure you want to delete course ID: ${courseId}?`)) {
+                fetch(`../../v2/admin.php?action=delete_course&id=${encodeURIComponent(courseId)}`, {
+                  method: "POST"
+                })
+                .then(response => response.json())
+                .then(data => {
+                  if (data.Success) {
+                    alert("Course deleted successfully.");
+                    window.location.reload();
+                  } else {
+                    alert("Delete failed: " + data.Message);
+                  }
+                })
+                .catch(error => {
+                  console.error("Delete error:", error);
+                  alert("An error occurred while deleting the course.");
+                });
+              }
+            });
           });
         } else {
           alert("Failed to load courses: " + data.Message);
@@ -99,17 +126,18 @@
     <!-- Right column: Main content -->
     <section class="main-content">
       <h1>Courses</h1>
-      <button class="blue-button" style="margin-bottom: 20px;">Add Course</button>
+      <a href="admin_add_course.php" class="blue-button add-course-button">Add Course</a>
       <table class="venues-table" id="courses-table">
         <thead>
           <tr>
             <th>ID</th>
             <th>Name</th>
             <th>Description</th>
-            <th>Venue</th>
+            <th>Venue ID</th>
             <th>Start</th>
             <th>End</th>
             <th>Edit</th>
+            <th>Delete</th>
           </tr>
         </thead>
         <tbody>
