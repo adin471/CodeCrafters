@@ -4,38 +4,13 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=1024">
   <title>University of Wolverhampton Open Day</title>
+
+  <!-- Existing Admin Styles -->
   <link rel="stylesheet" href="../admin_styles/admin_style.css">
-  
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      const logoutButton = document.getElementById('logout-button');
 
-      if (!logoutButton) {
-        console.warn("Logout button not found.");
-        return;
-      }
-
-      logoutButton.addEventListener('click', () => {
-        logoutUser();
-      });
-    });
-
-    function logoutUser() {
-      fetch('../../v2/logout.php', { method: 'POST' })
-        .then(response => response.json())
-        .then(data => {
-          if (data.Success) {
-            window.location.href = 'admin_login.php';
-          } else {
-            alert(`Logout failed: ${data.message}`);
-          }
-        })
-        .catch(error => {
-          console.error('Logout error:', error);
-          alert('An error occurred while logging out.');
-        });
-    }
-  </script>
+  <!-- Flatpickr for datetime fields -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 </head>
 <body>
   <header>
@@ -43,7 +18,7 @@
   </header>
 
   <main class="container">
-    <!-- Left column: menu -->
+    <!-- Left column: Navigation -->
     <section class="left-column">
       <nav>
         <h3><a href="admin_courses.php">Courses</a></h3>
@@ -67,7 +42,152 @@
     <!-- Right column: Main content -->
     <section class="main-content">
       <h1>Add Course</h1>
+
+      <form id="add-course-form" class="add-course-form">
+        <!-- Left column -->
+        <div class="form-group">
+          <label for="coursename">Course Name:</label>
+          <input type="text" id="coursename" name="coursename" required>
+        </div>
+
+        <!-- Center column -->
+        <div class="form-group center-column">
+          <label for="coursedesc">Course Description:</label>
+          <textarea id="coursedesc" name="coursedesc" rows="4" required></textarea>
+        </div>
+
+        <!-- Right column -->
+        <div class="form-group">
+          <label for="courseend">Course End:</label>
+          <input type="text" id="courseend" required>
+        </div>
+
+        <!-- Left column -->
+        <div class="form-group">
+          <label for="coursevenue">Venue:</label>
+          <select id="coursevenue" name="coursevenue" required>
+            <option value="">Loading venues...</option>
+          </select>
+        </div>
+
+        <!-- Empty center -->
+        <div></div>
+
+        <!-- Right column -->
+        <div class="form-group">
+          <label for="coursestart">Start:</label>
+          <input type="text" id="coursestart" required>
+        </div>
+
+        <button type="submit">Add Course</button>
+      </form>
+
+      <p id="response-message"></p>
     </section>
   </main>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // Logout
+      const logoutButton = document.getElementById('logout-button');
+      if (logoutButton) {
+        logoutButton.addEventListener('click', () => {
+          fetch('../../v2/logout.php', { method: 'POST' })
+            .then(response => response.json())
+            .then(data => {
+              if (data.Success) {
+                window.location.href = 'admin_login.php';
+              } else {
+                alert(`Logout failed: ${data.message}`);
+              }
+            })
+            .catch(error => {
+              console.error('Logout error:', error);
+              alert('An error occurred while logging out.');
+            });
+        });
+      }
+
+      // Flatpickr datetime setup
+      flatpickr("#coursestart", {
+        enableTime: true,
+        dateFormat: "Y-m-d H:i",
+        time_24hr: true
+      });
+
+      flatpickr("#courseend", {
+        enableTime: true,
+        dateFormat: "Y-m-d H:i",
+        time_24hr: true
+      });
+
+      // Load venues
+      fetch('../../v2/admin.php?action=return_venues')
+        .then(res => res.json())
+        .then(data => {
+          const venueSelect = document.getElementById('coursevenue');
+          venueSelect.innerHTML = '';
+          if (data.Success && Array.isArray(data.Data)) {
+            data.Data.forEach(venue => {
+              const option = document.createElement('option');
+              option.value = venue.venue_id;
+              option.textContent = `${venue.building_name} - ${venue.floor} Floor`;
+              venueSelect.appendChild(option);
+            });
+          } else {
+            venueSelect.innerHTML = '<option value="">No venues available</option>';
+          }
+        })
+        .catch(() => {
+          document.getElementById('coursevenue').innerHTML =
+            '<option value="">Error loading venues</option>';
+        });
+
+      // Form submission
+      const form = document.getElementById('add-course-form');
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const startStr = document.getElementById('coursestart').value;
+        const endStr = document.getElementById('courseend').value;
+
+        const start = new Date(startStr);
+        const end = new Date(endStr);
+
+        if (end <= start) {
+          alert("End time must be after start time.");
+          return;
+        }
+
+        const toEpoch = str => Math.floor(new Date(str).getTime() / 1000);
+
+        const data = {
+          action: 'add_course',
+          id: Date.now(),
+          coursename: form.coursename.value,
+          coursedesc: form.coursedesc.value,
+          coursevenue: form.coursevenue.value,
+          coursestart: toEpoch(startStr),
+          courseend: toEpoch(endStr)
+        };
+
+        const params = new URLSearchParams(data).toString();
+
+        try {
+          const res = await fetch(`../../v2/admin.php?${params}`);
+          const json = await res.json();
+
+          if (json.Success) {
+            window.location.href = 'admin_courses.php';
+          } else {
+            alert(`Course creation failed: ${json.Message}`);
+          }
+        } catch (err) {
+          console.error(err);
+          alert('Failed to submit course. Please try again.');
+        }
+      });
+    });
+  </script>
 </body>
 </html>
