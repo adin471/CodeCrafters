@@ -1,4 +1,17 @@
 <?php
+
+session_start();
+
+if (!isset($_SESSION['user_level']) || $_SESSION['user_level'] != 1) {
+    if ($_SESSION['user_id']) {
+        header('Location: ../../index.php');
+        exit;
+    } else {
+        header('Location: admin_login.php');
+        exit;
+    }
+}
+
 require_once "../../../../vendor/autoload.php";
 
 use Twig\Environment;
