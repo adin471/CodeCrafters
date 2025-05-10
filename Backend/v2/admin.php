@@ -15,18 +15,25 @@
     // check for which action the admin wants to do
     if(isset($method['action'])){
         if($method['action'] == 'refreshaccesscode'){
+             // Refresh Access Code \\
             Refresh_Access_Code();
         } elseif($method['action'] == 'update_course'){
 
+            $course_id = null;
             $course_name = 'Keep';
             $course_desc = 'Keep';
             $venue_id = 'Keep';
             $course_start = 'Keep';
             $course_end = 'Keep';
 
-            // Check for course Entry ID (PK) \\
+            // Check for course Entry ID (PK), Also Validate \\
             if(!isset($method['id'])){
                 Generate_ResponseJSON(FALSE, 'ERROR - Missing Course Entry ID', null);
+                die(); 
+            } elseif(is_numeric($method['id'])){
+                $course_id = $method['id'];
+            } else {
+                Generate_ResponseJSON(FALSE, 'ERROR - Invalid Course Entry ID', null);
                 die(); 
             }
 
@@ -37,7 +44,7 @@
 
             // Check for new course description \\
             if(isset($method['coursedesc'])){
-                $course_desc = $method['coursedesc'];
+                $course_desc = $method['coursename'];
             }
 
             // Check for new venue id \\
@@ -50,7 +57,9 @@
 
                 // Make sure its numeric, conver to date time and set \\
                 if(is_numeric($method['coursestart'])){
-                    $course_start = date("Y-m-d H:i:s", $epoch);
+                    $course_start = date("Y-m-d H:i:s", $method['coursestart']);
+                } else {
+                    $course_start = 'None';
                 }
 
             }
@@ -60,42 +69,49 @@
 
                 // Make sure its numeric, conver to date time and set \\
                 if(is_numeric($method['courseend'])){
-                    $course_end = date("Y-m-d H:i:s", $epoch);
+                    $course_end = date("Y-m-d H:i:s", $method['courseend']);
+                } else {
+                    $course_end = 'None';
                 }
             }
+            
+            if($course_name == 'Keep' && $course_desc == 'Keep' && $venue_id == 'Keep' && $course_start == 'Keep' && $course_end == 'Keep'){
+                Generate_ResponseJSON(FALSE, 'ERROR - This edit provides no changes, so none were made', null);
+                die(); 
+            }
 
-            // Update_Course($method['id'], $course_name, $course_desc, $venue_id, $course_start, $course_end);
+            Update_Course($course_id, $course_name, $course_desc, $venue_id, $course_start, $course_end);
         } elseif($method['action'] == 'add_course'){
-            // Check for course Entry ID (PK) \\
+            
+            $course_name = 'None';
+            $course_desc = 'None';
+            $venue_id = 'None';
+            $course_start = 'None';
+            $course_end = 'None';
 
-            $course_name = 'Keep';
-            $course_desc = 'Keep';
-            $venue_id = 'Keep';
-            $course_start = 'Keep';
-            $course_end = 'Keep';
-
-
-            // Check for new course name \\
+            // Check for course name \\
             if(isset($method['coursename'])){
                 $course_name = $method['coursename'];
             }
 
-            // Check for new course description \\
+            // Check for course description \\
             if(isset($method['coursedesc'])){
-                $course_desc = $method['coursedesc'];
+                $course_desc = $method['coursename'];
             }
 
-            // Check for new venue id \\
+            // Check for venue id \\
             if(isset($method['coursevenue'])){
                 $venue_id = $method['coursevenue'];
             }
 
-            // Check for new course start \\
+            // Check for course start \\
             if(isset($method['coursestart'])){
 
                 // Make sure its numeric, conver to date time and set \\
                 if(is_numeric($method['coursestart'])){
-                    $course_start = date("Y-m-d H:i:s", $epoch);
+                    $course_start = date("Y-m-d H:i:s", $method['coursestart']);
+                } else {
+                    $course_start = 'None';
                 }
 
             }
@@ -105,12 +121,14 @@
 
                 // Make sure its numeric, conver to date time and set \\
                 if(is_numeric($method['courseend'])){
-                    $course_end = date("Y-m-d H:i:s", $epoch);
+                    $course_end = date("Y-m-d H:i:s", $method['courseend']);
+                } else {
+                    $course_end = 'None';
                 }
             }
 
-            if($course_name != 'None' && $course_desc != 'None' && $venue_id !=  'None' && $course_start !=  'None'  && $course_start !=  'None'){
-                //Add_Course();
+            if($course_name != 'None' && $course_desc != 'None' && $venue_id !=  'None' && $course_start !=  'None'  && $course_end !=  'None'){
+                Add_Course($course_name, $course_desc, $venue_id, $course_start, $course_end);
             }
         } elseif($method['action'] == 'delete_course'){
             // Check for course Entry ID (PK) \\

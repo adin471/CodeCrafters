@@ -5,7 +5,7 @@
     */
 
     // disable error reporting
-    //error_reporting(0);
+    error_reporting(0);
 
     if (session_status() === PHP_SESSION_NONE) {
      session_start();
@@ -693,5 +693,109 @@
                 die();
             }
         }
+    }
+
+    function Add_Course($name, $description, $venue_id, $start_time, $end_time){
+        // Attempt to find data using user id \\
+        list($valid, $data) = Get_User_Data($_SESSION['user_id']);
+ 
+        // If Data Found, check against it \\
+        if($valid){
+            // Check user level, if success continue, otherwise failure response \\
+            if($data['user_level'] >= 1){
+                // Make the query \\
+                $query = "INSERT INTO ODCoursesDB (course_name, course_description, venue_id, course_start, course_end) VALUES (?, ?, ?, ?, ?)";
+                list($execute_success, $execute_result) = Generate_Query($query, 
+                 array('s', $name), 
+                 array('s', $description),
+                 array('i', $venue_id),
+                 array('s', $start_time),
+                 array('s', $end_time)
+                );
+
+                if($execute_success){
+                    // Return Success \\
+                    Generate_ResponseJSON(TRUE, 'SUCCESS - Course has been added to database', null);
+                    die();
+                 } else {
+                    Generate_ResponseJSON(FALSE, 'ERROR - Failed to add course to database', null);
+                    die();
+                }
+
+            } else {
+                Generate_ResponseJSON(FALSE, 'ERROR - You are not authorized to access this endpoint', null);
+                die();
+            }
+        }        
+    }
+
+    function Update_Course($id, $name, $description, $venue_id, $start_time, $end_time){
+        // Attempt to find data using user id \\
+        list($valid, $data) = Get_User_Data($_SESSION['user_id']);
+ 
+        // If Data Found, check against it \\
+        if($valid){
+            // Check user level, if success continue, otherwise failure response \\
+            if($data['user_level'] >= 1){
+                $validation_query = "SELECT * FROM ODCoursesDB WHERE course_id = ?";
+                list($validation_success, $validation_result) = Generate_Query($validation_query, array('i', $id));
+
+                if($validation_success){
+                    if(mysqli_num_rows($validation_result) == 0){
+                        Generate_ResponseJSON(TRUE, 'ERROR - No Courses were found with this Entry ID', null);
+                        die();
+                    } else {
+                        $current_data = $validation_result->fetch_assoc();
+
+                        if($name == 'KEEP'){
+                            $name = $current_data['course_name'];
+                        }
+
+                        if($description == 'KEEP'){
+                            $description = $current_data['course_description'];
+                        }
+
+                        if($venue_id == 'KEEP'){
+                            $venue_id = $current_data['venue_id'];
+                        }
+
+                        if($start_time == 'KEEP'){
+                            $start_time = $current_data['course_start'];
+                        }
+
+                        if($end_time == 'KEEP'){
+                            $end_time = $current_data['course_start'];
+                        }
+                    }
+                } else {
+                    Generate_ResponseJSON(TRUE, 'ERROR - Validation check did not run properly', null);
+                    die();
+                }
+
+                // Make the query \\
+                $query = "UPDATE ODCoursesDB SET course_name = ?, course_description = ?, venue_id = ?, course_start = ?, course_end = ? WHERE course_id = ?";
+                list($execute_success, $execute_result) = Generate_Query($query, 
+                 array('s', $name), 
+                 array('s', $description),
+                 array('i', $venue_id),
+                 array('s', $start_time),
+                 array('s', $end_time),
+                 array('i', $id)
+                );
+
+                if($execute_success){
+                    // Return Success \\
+                    Generate_ResponseJSON(TRUE, 'SUCCESS - Course has been updated in the database', null);
+                    die();
+                 } else {
+                    Generate_ResponseJSON(FALSE, 'ERROR - Failed to add update course', null);
+                    die();
+                }
+
+            } else {
+                Generate_ResponseJSON(FALSE, 'ERROR - You are not authorized to access this endpoint', null);
+                die();
+            }
+        }        
     }
 ?>
